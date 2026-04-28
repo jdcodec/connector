@@ -1,0 +1,42 @@
+name: CI
+
+# Runs on every PR + push to main on the public connector repo
+# (jdcodec/connector). Catches:
+#   - External contributions that try to import codec internals or use
+#     codec-internal terminology (Rule 0 grep-gate).
+#   - Test regressions in the Privacy Shield, MCP proxy, cloud client.
+#   - Build breakage at strict TypeScript.
+#
+# This workflow file lives in the JD Codec monorepo at
+# packages/jdcodec-connector/.github/workflows/ci.yml. It's inert
+# in the monorepo (GitHub only reads .github/workflows/ at repo root)
+# and becomes active once synced to the public repo.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: build + test (grep-gate + vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build (TypeScript strict)
+        run: npm run build
+
+      - name: Test (Rule 0 grep-gate + vitest suite)
+        run: npm test
