@@ -1,8 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { redact } from "../src/privacy/index.js";
 
+// CI runners (e.g. GitHub Actions ubuntu-latest, shared-tenant) are 2-3× slower
+// than typical dev machines for regex-heavy work. Apply a 4× multiplier when
+// the CI env is set, leaving headroom for runner variance while still catching
+// real perf regressions (anything 2× worse than the local baseline still fails CI).
+const CI_FACTOR = process.env.CI ? 4 : 1;
+const T_REALISTIC_MS = 100 * CI_FACTOR;
+const T_DENSE_MS = 200 * CI_FACTOR;
+const T_SMALL_MS = 30 * CI_FACTOR;
+
 describe("privacy shield — performance", () => {
-  it("redacts a realistic 1 MB snapshot in <100ms (median of 5 runs)", () => {
+  it(`redacts a realistic 1 MB snapshot in <${T_REALISTIC_MS}ms (median of 5 runs)`, () => {
     // Realistic Playwright-MCP snapshot density: ~1 PII item per 2 KB. A real 1 MB
     // snapshot is mostly layout / button / ref metadata, with occasional PII values.
     const sparseBlock = buildBlock({ piiLines: 1, paddingLines: 40 });
@@ -21,10 +30,10 @@ describe("privacy shield — performance", () => {
     samples.sort((a, b) => a - b);
     const median = samples[2];
 
-    expect(median, `median scan ${median.toFixed(1)} ms across 5 runs; all=${samples.map((n) => n.toFixed(1)).join(", ")}`).toBeLessThan(100);
+    expect(median, `median scan ${median.toFixed(1)} ms across 5 runs; all=${samples.map((n) => n.toFixed(1)).join(", ")}`).toBeLessThan(T_REALISTIC_MS);
   });
 
-  it("handles a PII-dense 1 MB snapshot within 200ms (sanity upper bound)", () => {
+  it(`handles a PII-dense 1 MB snapshot within ${T_DENSE_MS}ms (sanity upper bound)`, () => {
     // Pathologically dense case: roughly 1 PII item per 50 chars. Not representative
     // of real DOM snapshots, included only to bound worst-case behaviour.
     const denseBlock = buildBlock({ piiLines: 3, paddingLines: 0 });
@@ -37,10 +46,10 @@ describe("privacy shield — performance", () => {
     const elapsed = performance.now() - t0;
 
     expect(Object.keys(out.redactionStats).length).toBeGreaterThan(0);
-    expect(elapsed, `dense scan took ${elapsed.toFixed(1)} ms`).toBeLessThan(200);
+    expect(elapsed, `dense scan took ${elapsed.toFixed(1)} ms`).toBeLessThan(T_DENSE_MS);
   });
 
-  it("redacts a 200k-char snapshot in <30ms", () => {
+  it(`redacts a 200k-char snapshot in <${T_SMALL_MS}ms`, () => {
     const block = buildBlock({ piiLines: 3, paddingLines: 5 });
     const snapshot = fillTo(block, 200 * 1024);
 
@@ -49,7 +58,7 @@ describe("privacy shield — performance", () => {
     const t0 = performance.now();
     redact(snapshot);
     const elapsed = performance.now() - t0;
-    expect(elapsed, `200k scan took ${elapsed.toFixed(1)} ms`).toBeLessThan(30);
+    expect(elapsed, `200k scan took ${elapsed.toFixed(1)} ms`).toBeLessThan(T_SMALL_MS);
   });
 });
 
