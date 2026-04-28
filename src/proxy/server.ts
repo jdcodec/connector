@@ -1,8 +1,13 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
 import type { CloudClient } from "../cloud/client.js";
 import { SessionState } from "../session/state.js";
-import type { UpstreamSession, UpstreamTool } from "./upstream.js";
+import type { UpstreamSession } from "./upstream.js";
 import { handleSnapshot } from "./snapshot.js";
 import type { Logger } from "./snapshot.js";
 
@@ -13,40 +18,95 @@ export interface ProxyDeps {
   cloud: CloudClient | null;
   bypass: boolean;
   log: Logger;
+  // Optional transport injection for tests; production path uses stdio.
+  transport?: Transport;
 }
 
 export interface ProxyHandle {
-  server: McpServer;
+  server: Server;
   close(): Promise<void>;
 }
 
 /**
- * Assemble the proxy McpServer. `browser_snapshot` is intercepted: response
- * text is handed to handleSnapshot() which runs Privacy Shield + cloud POST.
- * Everything else is passed through verbatim to upstream.
+ * Assemble the proxy server. `browser_snapshot` is intercepted: response text
+ * is handed to handleSnapshot() which runs Privacy Shield + cloud POST.
+ * Everything else passes through verbatim — upstream's actual inputSchema is
+ * preserved on tools/list so the agent knows what args to send, and arguments
+ * are forwarded untouched on tools/call. Using the low-level Server (rather
+ * than McpServer) is what lets us pass arbitrary args without forcing every
+ * upstream JSON Schema through a Zod conversion.
  */
 export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
   const { upstream, cloud, bypass, log } = deps;
   const session = new SessionState();
 
-  const server = new McpServer(
+  const server = new Server(
     { name: "jdcodec", version: "0.1.0" },
     {
+      capabilities: { tools: {} },
       instructions:
         "JDCodec proxy for Playwright MCP. Provides compressed browser snapshots " +
         "for token efficiency; forwards all other tools transparently.",
     },
   );
 
-  for (const tool of upstream.getTools()) {
-    if (tool.name === SNAPSHOT_TOOL) {
-      registerSnapshotTool(server, tool, { upstream, cloud, bypass, session, log });
-    } else {
-      registerPassthroughTool(server, tool, upstream, log);
-    }
-  }
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: upstream.getTools().map((t) => ({
+      name: t.name,
+      description: t.description,
+      inputSchema:
+        (t.inputSchema as Record<string, unknown> | undefined) ?? {
+          type: "object",
+          properties: {},
+        },
+    })),
+  }));
 
-  const transport = new StdioServerTransport();
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const name = request.params.name;
+    const args = (request.params.arguments ?? {}) as Record<string, unknown>;
+
+    if (name === SNAPSHOT_TOOL) {
+      const upstreamResult = await upstream.callTool(name, args);
+      if (upstreamResult.isError) {
+        return {
+          content: [{ type: "text", text: upstreamResult.text }],
+          isError: true,
+        };
+      }
+      try {
+        const handled = await handleSnapshot(upstreamResult.text, {
+          cloud,
+          session,
+          bypass,
+          log,
+        });
+        return { content: [{ type: "text", text: handled.text }] };
+      } catch (err) {
+        log.error("snapshot.unexpected_error", {
+          message: (err as Error)?.message ?? "unknown",
+        });
+        return {
+          content: [
+            {
+              type: "text",
+              text: "[JDCodec: snapshot handler failed; see connector logs]",
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+
+    const result = await upstream.callTool(name, args);
+    log.info("passthrough", { tool: name, response_chars: result.text.length });
+    return {
+      content: [{ type: "text", text: result.text }],
+      ...(result.isError ? { isError: true } : {}),
+    };
+  });
+
+  const transport = deps.transport ?? new StdioServerTransport();
   await server.connect(transport);
   log.info("proxy.started", {
     tool_count: upstream.getTools().length,
@@ -64,84 +124,4 @@ export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
       }
     },
   };
-}
-
-interface SnapshotDeps {
-  upstream: UpstreamSession;
-  cloud: CloudClient | null;
-  bypass: boolean;
-  session: SessionState;
-  log: Logger;
-}
-
-function registerSnapshotTool(
-  server: McpServer,
-  tool: UpstreamTool,
-  deps: SnapshotDeps,
-): void {
-  const description =
-    tool.description ??
-    "Take a snapshot of the current page's accessibility tree (compressed by JDCodec).";
-
-  server.registerTool(
-    tool.name,
-    {
-      description,
-      inputSchema: {},
-    },
-    async (_args, _extra) => {
-      const upstreamResult = await deps.upstream.callTool(tool.name, {});
-      if (upstreamResult.isError) {
-        return {
-          content: [{ type: "text", text: upstreamResult.text }],
-          isError: true,
-        };
-      }
-      try {
-        const handled = await handleSnapshot(upstreamResult.text, {
-          cloud: deps.cloud,
-          session: deps.session,
-          bypass: deps.bypass,
-          log: deps.log,
-        });
-        return { content: [{ type: "text", text: handled.text }] };
-      } catch (err) {
-        deps.log.error("snapshot.unexpected_error", {
-          message: (err as Error)?.message ?? "unknown",
-        });
-        return {
-          content: [
-            {
-              type: "text",
-              text: "[JDCodec: snapshot handler failed; see connector logs]",
-            },
-          ],
-          isError: true,
-        };
-      }
-    },
-  );
-}
-
-function registerPassthroughTool(
-  server: McpServer,
-  tool: UpstreamTool,
-  upstream: UpstreamSession,
-  log: Logger,
-): void {
-  server.registerTool(
-    tool.name,
-    {
-      description: tool.description ?? `Passthrough to upstream ${tool.name}`,
-      inputSchema: {},
-    },
-    async (args, _extra) => {
-      const result = await upstream.callTool(tool.name, (args ?? {}) as Record<string, unknown>);
-      log.info("passthrough", { tool: tool.name, response_chars: result.text.length });
-      return {
-        content: [{ type: "text", text: result.text }],
-        ...(result.isError ? { isError: true } : {}),
-      };
-    },
-  );
 }
