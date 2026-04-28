@@ -1,0 +1,1396 @@
+{
+  "ruleset_version": "2.2.0",
+  "ruleset_id": "jdc-privacy-shield",
+  "generated_for": "packages/jdcodec-connector",
+  "notes": "JS RegExp only. ReDoS-safe. Production-grade PII ruleset v2. See pii-test-corpus.json for acceptance vectors.",
+  "changelog": {
+    "2.2.0": {
+      "date": "2026-04-24",
+      "summary": "Adds ACN (Australian Company Number) coverage and extends DOB to cover ISO date form, spelled-out month form, and 'born YYYY' pattern. DOB_ISO + DOB_LONG are engine-context-gated on DOB keywords to avoid over-redacting ordinary dates; DOB_SLASH is unchanged to preserve v2.0 corpus behaviour. Names (personal / company) remain out of scope by design — regex can't do NER reliably; commercial tools (Hotjar/Datadog/Sentry) don't attempt it either.",
+      "added": [
+        "ACN_AU — 9-digit Australian Company Number with weighted checksum (weights 8,7,6,5,4,3,2,1 on digits 1-8; complement mod 10 = digit 9 per ASIC). Priority 100, context_boosters [ACN]. Same shape as TFN_AU_9 — checksum + context keyword disambiguate.",
+        "ACN_IN_ATTR — ACN inside HTML attributes (value / data-tax / data-customer). Priority 105 with validator.",
+        "DOB_ISO — ISO date form (1990-03-15). Engine context-gated (requires dob/d.o.b/date of birth/birth/birthday/born within ±48 chars) to avoid matching every ordinary YYYY-MM-DD date.",
+        "DOB_LONG — spelled-out month form (March 15, 1990 / 15 March 1990 / 15th March 1990 / Mar 15 1990). Engine context-gated same as DOB_ISO.",
+        "DOB_BORN — 'born YYYY' / 'born in YYYY'. Engine prefix-trims the 'born ' prefix so only the year is replaced with {{REDACTED_DOB}}."
+      ],
+      "explicitly_out_of_scope": [
+        "Personal names (first / last / surname): regex cannot identify names reliably without NER. Autocomplete-hint-driven attribute rules (given-name / family-name) are a future candidate for v2.3 if Magento or other snapshots show need.",
+        "Company / organisation names: not PII under GDPR Article 4(1) (company ≠ natural person). Custom rule territory for individual customers, not default coverage.",
+        "Age-only ('age 35'): derived from DOB, not directly identifying; skip to reduce over-redaction of numbers in product contexts.",
+        "DOB_SLASH context-gating: preserves v2.0 corpus behaviour (POS-DOB-0002 '01-12-2005' alone redacts). Revisit if over-redaction is observed in real-world snapshots."
+      ]
+    },
+    "2.1.0": {
+      "date": "2026-04-24",
+      "summary": "Closes 14 regex gaps surfaced by the privacy shield engine running the pii-test-corpus.json adversarial suite. All additions are new rules; zero existing rules were modified. Priorities for the new rules sit one below their strict counterparts so v2.0 behaviour is preserved when it applies.",
+      "added": [
+        "CC_{VISA,MC,AMEX,DISCOVER,JCB}_DELIM — delimiter-tolerant CC forms (4111-1111-1111-1111, 3782-822463-10005, 5555-5555-5555-4444, 6011-1111-1111-1117, 3528-8911-1111-1111). v2.0 CC_{MC,AMEX,DISCOVER,JCB} required consecutive digits; CC_VISA's suffix structure was also broken on delimited input.",
+        "CC_MASKED_LOOSE + CC_MASKED_RUN — masked cards (****-****-****-4444, ************4444). v2.0 CC_MASKED has a \\b before * which never fires.",
+        "PHONE_US_PERMISSIVE — test numbers with illegal-for-NANP exchanges (555-123-4567). Engine context-gates this rule to prevent over-redaction of serial numbers (same treatment as PHONE_INTL_FALLBACK).",
+        "PHONE_E164_SPACED — E.164 with embedded separators (+49 30 12345678). v2.0 PHONE_E164 needs 6-14 consecutive digits after '+'.",
+        "PHONE_AU_NATIONAL_PAREN — AU landline with parenthesised area code ((03) 1234 5678).",
+        "EMAIL_OBFUSCATED_AT_ONLY — obfuscated email with (at) but literal dot (user(at)example.com). v2.0 EMAIL_OBFUSCATED requires both (at) AND (dot).",
+        "EMAIL_IN_ATTR_LOOSE — widens attribute list (title, alt, aria-description, data-user, data-customer, content) AND allows surrounding text within the attribute value (title=\"Email: admin@test.com\").",
+        "PHONE_IN_ATTR_LOOSE — dashes in the attribute character class. v2.0 PHONE_IN_ATTR's [\\d\\s] rejects +1-555-123-4567.",
+        "API_KEY_GOOGLE_FLEX — 20-45 char length for Google API keys. v2.0 API_KEY_GOOGLE requires exactly 35."
+      ],
+      "validation": "pii-test-corpus.json v1.0.0 — 152/152 strict-gating entries pass (99 positive zero-false-negative + 53 negative zero-over-redaction). 1 positive skip (POS-CC-0018 uses BIN 2721 outside the valid MC 2-series 2221-2720 — corpus data bug). 9/16 edge entries pass (non-gating per corpus class)."
+    }
+  },
+  "replacement_tokens": {
+    "CC": "{{REDACTED_CC}}",
+    "EMAIL": "{{REDACTED_EMAIL}}",
+    "PHONE": "{{REDACTED_PHONE}}",
+    "SSN": "{{REDACTED_SSN}}",
+    "TFN": "{{REDACTED_TFN}}",
+    "MEDICARE": "{{REDACTED_MEDICARE}}",
+    "ABN": "{{REDACTED_ABN}}",
+    "ACN": "{{REDACTED_ACN}}",
+    "NINO": "{{REDACTED_NINO}}",
+    "NHS": "{{REDACTED_NHS}}",
+    "SIN": "{{REDACTED_SIN}}",
+    "IBAN": "{{REDACTED_IBAN}}",
+    "VAT": "{{REDACTED_VAT}}",
+    "PASSPORT": "{{REDACTED_PASSPORT}}",
+    "TOKEN": "{{REDACTED_TOKEN}}",
+    "API_KEY": "{{REDACTED_API_KEY}}",
+    "IP": "{{REDACTED_IP}}",
+    "IPV6": "{{REDACTED_IPV6}}",
+    "ADDRESS": "{{REDACTED_ADDRESS}}",
+    "DOB": "{{REDACTED_DOB}}"
+  },
+  "validators": {
+    "luhn": {
+      "type": "checksum",
+      "description": "Standard mod-10 Luhn on digits-only."
+    },
+    "tfn": {
+      "type": "checksum",
+      "description": "AU TFN weighted (1,4,3,7,5,8,6,9,10) mod 11 == 0."
+    },
+    "medicare": {
+      "type": "checksum",
+      "description": "AU Medicare weights (1,3,7,9,1,3,7,9) on first 8 digits, compare to 9th; first digit 2-6."
+    },
+    "abn": {
+      "type": "checksum",
+      "description": "AU ABN: subtract 1 from first digit, weight (10,1,3,5,7,9,11,13,15,17,19), sum mod 89 == 0."
+    },
+    "iban_mod97": {
+      "type": "checksum",
+      "description": "Rearrange country+check to end, letter->digit (A=10..Z=35), mod 97 == 1."
+    },
+    "nino_prefix_block": {
+      "type": "format",
+      "description": "Reject NINO prefixes BG,GB,KN,NK,NT,TN,ZZ and prefixes starting with D,F,I,Q,U,V."
+    },
+    "mod11_nhs": {
+      "type": "checksum",
+      "description": "UK NHS mod-11 algorithm as defined in BST section 4.4."
+    },
+    "aba_mod10": {
+      "type": "checksum",
+      "description": "US ABA routing number mod-10 checksum."
+    }
+  },
+  "leaky_attributes": {
+    "description": "HTML attributes that frequently carry PII inside a DOM/ARIA snapshot.",
+    "attribute_names": [
+      "value",
+      "placeholder",
+      "aria-label",
+      "aria-description",
+      "aria-placeholder",
+      "title",
+      "alt",
+      "content",
+      "data-email",
+      "data-phone",
+      "data-user",
+      "data-account",
+      "data-id",
+      "data-ssn",
+      "data-card",
+      "data-tax",
+      "data-customer"
+    ],
+    "attribute_name_wildcard": "^data-[a-z][a-z0-9-]{0,30}$",
+    "autocomplete_pii_tokens": [
+      "email",
+      "tel",
+      "tel-national",
+      "tel-local",
+      "name",
+      "given-name",
+      "family-name",
+      "street-address",
+      "address-line1",
+      "address-line2",
+      "postal-code",
+      "country",
+      "bday",
+      "bday-year",
+      "bday-month",
+      "bday-day",
+      "cc-number",
+      "cc-name",
+      "cc-exp",
+      "cc-csc",
+      "new-password",
+      "current-password",
+      "one-time-code"
+    ],
+    "input_type_pii": [
+      "email",
+      "tel",
+      "password"
+    ],
+    "contextual_label_hints": {
+      "CC": [
+        "card",
+        "credit",
+        "debit",
+        "cc",
+        "cardnum",
+        "pan"
+      ],
+      "SSN": [
+        "ssn",
+        "social"
+      ],
+      "TFN": [
+        "tfn",
+        "tax file"
+      ],
+      "MEDICARE": [
+        "medicare"
+      ],
+      "ABN": [
+        "abn"
+      ],
+      "NINO": [
+        "national insurance",
+        "ni number",
+        "nino"
+      ],
+      "NHS": [
+        "nhs"
+      ],
+      "SIN": [
+        "sin",
+        "social insurance"
+      ],
+      "IBAN": [
+        "iban",
+        "bank account"
+      ],
+      "VAT": [
+        "vat",
+        "tax id"
+      ],
+      "PASSPORT": [
+        "passport"
+      ],
+      "DOB": [
+        "dob",
+        "date of birth",
+        "birthday"
+      ],
+      "EMAIL": [
+        "email",
+        "e-mail"
+      ],
+      "PHONE": [
+        "phone",
+        "mobile",
+        "cell",
+        "tel"
+      ]
+    }
+  },
+  "ambiguity_rules": {
+    "suppress_if_preceded_by": {
+      "regex": "(?i)(?:order|invoice|sku|serial|ref|reference|ticket|receipt|tracking|batch|part|model|confirmation)\\s*(?:no\\.?|number|#|:)?\\s*$",
+      "window_chars": 24
+    },
+    "suppress_if_inside_iso8601": {
+      "regex": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:?\\d{2})?"
+    },
+    "suppress_if_timestamp": {
+      "regex": "\\b\\d{10,13}\\b(?=\\s*(?:ms|s|sec|seconds|ns|epoch)\\b)"
+    },
+    "suppress_if_ref_attribute": {
+      "regex": "\\[ref=e\\d+\\]"
+    },
+    "suppress_if_uuid": {
+      "regex": "\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\b"
+    },
+    "suppress_if_hex_color": {
+      "regex": "#[0-9a-fA-F]{3,8}\\b"
+    }
+  },
+  "pii_patterns": [
+    {
+      "category": "Credit Card",
+      "name": "CC_VISA",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b4[0-9]{12}(?:[0-9]{3})?(?:[\\s.-]?[0-9]{4}){0,3}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Visa 13-19 digits with optional delimiters"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_MASTERCARD",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?:5[1-5][0-9]{2}|2(?:2(?:2[1-9]|[3-9][0-9])|[3-6][0-9]{2}|7(?:[01][0-9]|20)))[0-9]{12}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Mastercard 2-series BIN 51-55, 2221-2720"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_AMEX",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b3[47][0-9]{13}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Amex 15 digits, starts 34 or 37"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_DISCOVER",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b6(?:011|5[0-9]{2}|4[4-9][0-9]|22(?:1[2-9]|[2-8][0-9]|9(?:[01][0-9]|2[0-5])))[0-9]{12}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Discover 16-19 digits"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_DINERS",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "medium",
+      "regex": "\\b3(?:0[0-5]|[68][0-9])[0-9]{11}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Diners Club 14 digits"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_JCB",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "medium",
+      "regex": "\\b35(?:[2-8][0-9])[0-9]{12}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "JCB 15-16 digits, starts 3528-3589"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_UNIONPAY",
+      "region": "GLOBAL",
+      "priority": 98,
+      "confidence": "medium",
+      "regex": "\\b62[0-9]{14,17}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "UnionPay 16-19 digits"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_GENERIC_16",
+      "region": "GLOBAL",
+      "priority": 90,
+      "confidence": "low",
+      "regex": "\\b[0-9]{13,19}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute",
+        "suppress_if_timestamp"
+      ],
+      "notes": "Generic fallback, requires Luhn validation"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_PARTIAL_TAIL",
+      "region": "GLOBAL",
+      "priority": 95,
+      "confidence": "high",
+      "regex": "\\b(?:ending\\s+in|last\\s*4|[•]{4,}|[*]{4,}|x{4,})[\\s:]*\\d{4}\\b",
+      "flags": "gi",
+      "replacement_token": "CC",
+      "anti_patterns": [],
+      "notes": "Partial exposure like 'ending in 4444'"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_MASKED",
+      "region": "GLOBAL",
+      "priority": 95,
+      "confidence": "high",
+      "regex": "\\b[*•xX]{8,15}\\d{4}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "anti_patterns": [],
+      "notes": "Masked card numbers like ****-****-****-4444"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|placeholder|data-card)[\\s]*=[\"'])[0-9]{13,19}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "CC",
+      "validator": "luhn",
+      "anti_patterns": [],
+      "context_boosters": [
+        "CC"
+      ],
+      "notes": "CC inside HTML attributes"
+    },
+    {
+      "category": "Email",
+      "name": "EMAIL_RFC5322_PRAGMATIC",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b[\\w.%+-]{1,64}@(?:[\\w-]+\\.){1,63}[\\w-]{2,24}\\b",
+      "flags": "g",
+      "replacement_token": "EMAIL",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Pragmatic RFC5322 email"
+    },
+    {
+      "category": "Email",
+      "name": "EMAIL_OBFUSCATED",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b[\\w.%+-]{1,64}\\s?(?:\\[at\\]|\\(at\\)|\\{at\\})\\s?[\\w.-]{1,253}\\s?(?:\\[dot\\]|\\(dot\\)|\\{dot\\})\\s?[\\w.-]{2,24}\\b",
+      "flags": "g",
+      "replacement_token": "EMAIL",
+      "anti_patterns": [],
+      "notes": "Obfuscated email like user[at]example[dot]com"
+    },
+    {
+      "category": "Email",
+      "name": "EMAIL_MAILTO",
+      "region": "GLOBAL",
+      "priority": 101,
+      "confidence": "high",
+      "regex": "mailto:[\\w.%+-]{1,64}@(?:[\\w-]+\\.){1,63}[\\w-]{2,24}",
+      "flags": "gi",
+      "replacement_token": "EMAIL",
+      "anti_patterns": [],
+      "notes": "Email with mailto: prefix"
+    },
+    {
+      "category": "Email",
+      "name": "EMAIL_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|placeholder|data-email|aria-label)[\\s]*=[\"'])[\\w.%+-]{1,64}@[\\w.-]{2,30}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "EMAIL",
+      "anti_patterns": [],
+      "context_boosters": [
+        "EMAIL"
+      ],
+      "notes": "Email inside HTML attributes"
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_E164",
+      "region": "INTL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\+[1-9]\\d{6,14}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "E.164 international format"
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_US",
+      "region": "US",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\(?[2-9][0-9]{2}\\)?[. -]?[2-9][0-9]{2}[. -]?[0-9]{4}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute",
+        "suppress_if_iso8601",
+        "suppress_if_timestamp"
+      ],
+      "notes": "US phone with area code"
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_AU_NATIONAL",
+      "region": "AU",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b0[2378][. -]?\\d{4}[. -]?\\d{4}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "AU landline 02/03/07/08"
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_AU_MOBILE",
+      "region": "AU",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b04\\d{2}[. -]?\\d{3}[. -]?\\d{3}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "AU mobile 04xx"
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_UK",
+      "region": "UK",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b0(?:[1-9]\\d{1,4})[. -]?\\d{3,4}[. -]?\\d{3,4}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "UK geographic"
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_UK_MOBILE",
+      "region": "UK",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b\\+?44[. -]?7\\d{3,4}[. -]?\\d{3,4}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "UK mobile"
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_INTL_FALLBACK",
+      "region": "INTL",
+      "priority": 50,
+      "confidence": "low",
+      "regex": "\\b\\d{7,15}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute",
+        "suppress_if_timestamp",
+        "suppress_if_iso8601"
+      ],
+      "notes": "Generic fallback for numeric phones only"
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|placeholder|data-phone)[\\s]*=[\"'])\\+?[\\d\\s]{7,20}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [],
+      "context_boosters": [
+        "PHONE"
+      ],
+      "notes": "Phone inside HTML attributes"
+    },
+    {
+      "category": "SSN/Identity",
+      "name": "SSN_US",
+      "region": "US",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?!000|666|9\\d{2})\\d{3}[- ]\\d{2}[- ]\\d{4}\\b",
+      "flags": "g",
+      "replacement_token": "SSN",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "US SSN with invalid range check"
+    },
+    {
+      "category": "SSN/Identity",
+      "name": "SSN_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|data-ssn)[\\s]*=[\"'])(?!000|666|9\\d{2})\\d{3}[- ]?\\d{2}[- ]?\\d{4}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "SSN",
+      "anti_patterns": [],
+      "context_boosters": [
+        "SSN"
+      ],
+      "notes": "SSN inside HTML attributes"
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "TFN_AU_9",
+      "region": "AU",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b\\d{3}[\\s]?\\d{3}[\\s]?\\d{3}\\b",
+      "flags": "g",
+      "replacement_token": "TFN",
+      "validator": "tfn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "TFN"
+      ],
+      "notes": "AU TFN 9-digit"
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "TFN_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|data-tax)[\\s]*=[\"'])\\d{3}[\\s]?\\d{3}[\\s]?\\d{3}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "TFN",
+      "validator": "tfn",
+      "anti_patterns": [],
+      "context_boosters": [
+        "TFN"
+      ],
+      "notes": "TFN inside HTML attributes"
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "MEDICARE_AU",
+      "region": "AU",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b[2-6]\\d{3}[\\s]?\\d{5}[\\s]?\\d(?:[\\s]?/\\s?\\d)?\\b",
+      "flags": "g",
+      "replacement_token": "MEDICARE",
+      "validator": "medicare",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "MEDICARE"
+      ],
+      "notes": "AU Medicare with optional IRN"
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "ABN_AU",
+      "region": "AU",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b\\d{2}[\\s]?\\d{3}[\\s]?\\d{3}[\\s]?\\d{3}\\b",
+      "flags": "g",
+      "replacement_token": "ABN",
+      "validator": "abn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "ABN"
+      ],
+      "notes": "AU ABN 11-digit"
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "NINO_UK",
+      "region": "UK",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?![DFIQUV])[A-CEGHJ-PR-TW-Z](?![DFIQUVO])[A-CEGHJ-NPR-TW-Z][\\s]?\\d{2}[\\s]?\\d{2}[\\s]?\\d{2}[\\s]?[A-D]\\b",
+      "flags": "g",
+      "replacement_token": "NINO",
+      "validator": "nino_prefix_block",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "NINO"
+      ],
+      "notes": "UK National Insurance"
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "NHS_UK",
+      "region": "UK",
+      "priority": 100,
+      "confidence": "medium",
+      "regex": "\\b\\d{3}[\\s]?\\d{3}[\\s]?\\d{4}\\b",
+      "flags": "g",
+      "replacement_token": "NHS",
+      "validator": "mod11_nhs",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "NHS"
+      ],
+      "notes": "UK NHS number"
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "NINO_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|data-user)[\\s]*=[\"'])(?![DFIQUV])[A-CEGHJ-PR-TW-Z](?![DFIQUVO])[A-CEGHJ-NPR-TW-Z][\\s]?\\d{2}[\\s]?\\d{2}[\\s]?\\d{2}[\\s]?[A-D](?=[\"'])",
+      "flags": "g",
+      "replacement_token": "NINO",
+      "validator": "nino_prefix_block",
+      "anti_patterns": [],
+      "context_boosters": [
+        "NINO"
+      ],
+      "notes": "NINO inside HTML attributes"
+    },
+    {
+      "category": "SSN/Identity",
+      "name": "SIN_CA",
+      "region": "CA",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b\\d{3}[- ]\\d{3}[- ]\\d{3}\\b",
+      "flags": "g",
+      "replacement_token": "SIN",
+      "validator": "luhn",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "SIN"
+      ],
+      "notes": "Canadian SIN"
+    },
+    {
+      "category": "Financial",
+      "name": "IBAN_GENERIC",
+      "region": "INTL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b[A-Z]{2}\\d{2}(?:[\\s-]?[A-Z0-9]){11,30}\\b",
+      "flags": "g",
+      "replacement_token": "IBAN",
+      "validator": "iban_mod97",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "IBAN with mod-97 validation"
+    },
+    {
+      "category": "Financial",
+      "name": "IBAN_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|data-account)[\\s]*=[\"'])[A-Z]{2}\\d{2}[\\s-]?[A-Z0-9]{11,30}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "IBAN",
+      "validator": "iban_mod97",
+      "anti_patterns": [],
+      "context_boosters": [
+        "IBAN"
+      ],
+      "notes": "IBAN inside HTML attributes"
+    },
+    {
+      "category": "Financial",
+      "name": "VAT_EU",
+      "region": "EU",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?:AT\\s?U\\d{8}|BE\\s?0?\\d{9,10}|BG\\s?\\d{9,10}|CY\\s?\\d{8}[A-Z]|CZ\\s?\\d{8,10}|DE\\s?\\d{9}|DK\\s?\\d{8}|EE\\s?\\d{9}|ES\\s?[A-Z0-9]\\d{7}[A-Z0-9]|FI\\s?\\d{8}|FR\\s?[A-Z0-9]{2}\\d{9}|GR\\s?\\d{9}|HR\\s?\\d{11}|HU\\s?\\d{8}|IE\\s?\\d{7}[A-Z]{1,2}|IT\\s?\\d{11}|LT\\s?\\d{9,12}|LU\\s?\\d{8}|LV\\s?\\d{11}|MT\\s?\\d{8}|NL\\s?\\d{9}B\\d{2}|PL\\s?\\d{10}|PT\\s?\\d{9}|RO\\s?\\d{2,10}|SE\\s?\\d{12}|SI\\s?\\d{8}|SK\\s?\\d{10})\\b",
+      "flags": "g",
+      "replacement_token": "VAT",
+      "anti_patterns": [],
+      "notes": "EU VAT numbers by country"
+    },
+    {
+      "category": "Financial",
+      "name": "ROUTING_US_ABA",
+      "region": "US",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?:0[1-9]|1[0-2]|2[1-9]|3[0-2]|6[1-9]|7[0-2]|80)\\d{7}\\b",
+      "flags": "g",
+      "replacement_token": "IP",
+      "validator": "aba_mod10",
+      "anti_patterns": [],
+      "context_boosters": [
+        "IBAN"
+      ],
+      "notes": "US ABA routing number"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "BEARER_JWT",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "bearer\\s+[A-Za-z0-9_-]{8,1024}\\.[A-Za-z0-9_-]{8,1024}\\.[A-Za-z0-9_-]{8,1024}",
+      "flags": "gi",
+      "replacement_token": "TOKEN",
+      "anti_patterns": [],
+      "notes": "JWT bearer token"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "BASIC_AUTH",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "basic\\s+[A-Za-z0-9+/=]{8,512}",
+      "flags": "gi",
+      "replacement_token": "TOKEN",
+      "anti_patterns": [],
+      "notes": "Basic auth credentials"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "API_KEY_SK",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\bsk-[A-Za-z0-9]{20,64}\\b",
+      "flags": "g",
+      "replacement_token": "API_KEY",
+      "anti_patterns": [],
+      "notes": "OpenAI-style API key"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "API_KEY_AWS_AKID",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\bAKIA[0-9A-Z]{16}\\b",
+      "flags": "g",
+      "replacement_token": "API_KEY",
+      "anti_patterns": [],
+      "notes": "AWS access key ID"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "API_KEY_AWS_SECRET",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "aws(.{0,20})?(secret|sk)(.{0,20})?[:=]\\s*[A-Za-z0-9/+=]{40}\\b",
+      "flags": "gi",
+      "replacement_token": "API_KEY",
+      "anti_patterns": [],
+      "notes": "AWS secret key"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "API_KEY_GOOGLE",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\bAIza[0-9A-Za-z_-]{35}\\b",
+      "flags": "g",
+      "replacement_token": "API_KEY",
+      "anti_patterns": [],
+      "notes": "Google API key"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "API_KEY_GITHUB",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\bgh[pousr]_[A-Za-z0-9]{36,255}\\b",
+      "flags": "g",
+      "replacement_token": "API_KEY",
+      "anti_patterns": [],
+      "notes": "GitHub token"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "API_KEY_STRIPE",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?:sk|rk|pk)_(?:live|test)_[A-Za-z0-9]{24,99}\\b",
+      "flags": "g",
+      "replacement_token": "API_KEY",
+      "anti_patterns": [],
+      "notes": "Stripe key"
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "PASSWORD_ATTR",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "(?:password|passwd|pwd)\\s*[:=]\\s*\"?[^\"\\s]{4,128}\"?",
+      "flags": "gi",
+      "replacement_token": "TOKEN",
+      "anti_patterns": [],
+      "notes": "Password in attributes"
+    },
+    {
+      "category": "Network",
+      "name": "IPV4",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b",
+      "flags": "g",
+      "replacement_token": "IP",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "IPv4 address"
+    },
+    {
+      "category": "Network",
+      "name": "IPV6",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\\b",
+      "flags": "g",
+      "replacement_token": "IPV6",
+      "anti_patterns": [],
+      "notes": "IPv6 full form"
+    },
+    {
+      "category": "Network",
+      "name": "IPV6_COMPRESSED",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?:[0-9a-fA-F]{1,4}:){1,7}:(?:[0-9a-fA-F]{1,4}){1,7}\\b",
+      "flags": "g",
+      "replacement_token": "IPV6",
+      "anti_patterns": [],
+      "notes": "IPv6 compressed"
+    },
+    {
+      "category": "Network",
+      "name": "MAC_ADDRESS",
+      "region": "GLOBAL",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\\b",
+      "flags": "g",
+      "replacement_token": "IP",
+      "anti_patterns": [],
+      "notes": "MAC address"
+    },
+    {
+      "category": "Passport",
+      "name": "PASSPORT_US",
+      "region": "US",
+      "priority": 80,
+      "confidence": "low",
+      "regex": "\\b[A-Z0-9]{9}\\b",
+      "flags": "g",
+      "replacement_token": "PASSPORT",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "PASSPORT"
+      ],
+      "notes": "US passport - requires context"
+    },
+    {
+      "category": "Passport",
+      "name": "PASSPORT_AU",
+      "region": "AU",
+      "priority": 80,
+      "confidence": "medium",
+      "regex": "\\b[A-Z]\\d{7}\\b",
+      "flags": "g",
+      "replacement_token": "PASSPORT",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "PASSPORT"
+      ],
+      "notes": "AU passport"
+    },
+    {
+      "category": "Address",
+      "name": "POSTCODE_AU",
+      "region": "AU",
+      "priority": 80,
+      "confidence": "low",
+      "regex": "\\b(?:0[289][0-9]{2}|[1-9][0-9]{3})\\b",
+      "flags": "g",
+      "replacement_token": "ADDRESS",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "ADDRESS"
+      ],
+      "notes": "AU postcode"
+    },
+    {
+      "category": "Address",
+      "name": "POSTCODE_UK",
+      "region": "UK",
+      "priority": 80,
+      "confidence": "medium",
+      "regex": "\\b[A-Z]{1,2}\\d[A-Z\\d]?\\s?\\d[A-Z]{2}\\b",
+      "flags": "g",
+      "replacement_token": "ADDRESS",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "ADDRESS"
+      ],
+      "notes": "UK postcode"
+    },
+    {
+      "category": "Address",
+      "name": "ZIP_US",
+      "region": "US",
+      "priority": 80,
+      "confidence": "low",
+      "regex": "\\b\\d{5}(?:-\\d{4})?\\b",
+      "flags": "g",
+      "replacement_token": "ADDRESS",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "ADDRESS"
+      ],
+      "notes": "US ZIP code"
+    },
+    {
+      "category": "Date",
+      "name": "DOB_SLASH",
+      "region": "GLOBAL",
+      "priority": 80,
+      "confidence": "medium",
+      "regex": "\\b(?:0?[1-9]|[12][0-9]|3[01])[/\\.\\-](?:0?[1-9]|1[0-2])[/\\.\\-](?:19|20)\\d{2}\\b",
+      "flags": "g",
+      "replacement_token": "DOB",
+      "anti_patterns": [],
+      "context_boosters": [
+        "DOB"
+      ],
+      "notes": "Date of birth slash format"
+    },
+    {
+      "category": "Date",
+      "name": "DOB_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|data-bday)[\\s]*=[\"'])(?:0?[1-9]|[12][0-9]|3[01])[/\\.\\-](?:0?[1-9]|1[0-2])[/\\.\\-](?:19|20)\\d{2}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "DOB",
+      "anti_patterns": [],
+      "context_boosters": [
+        "DOB"
+      ],
+      "notes": "DOB inside HTML attributes"
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_VISA_DELIM",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\b4\\d{3}(?:[\\s.-]\\d{4}){3}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Visa with 4-4-4-4 delimiters. Complements CC_VISA which requires consecutive digits."
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_MC_DELIM",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\b(?:5[1-5]\\d{2}|2(?:2(?:2[1-9]|[3-9]\\d)|[3-6]\\d{2}|7(?:[01]\\d|20)))(?:[\\s.-]\\d{4}){3}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Mastercard 5[1-5] and 2-series with delimiters. Complements CC_MASTERCARD."
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_AMEX_DELIM",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\b3[47]\\d{2}[\\s.-]\\d{6}[\\s.-]\\d{5}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Amex 4-6-5 with delimiters. Complements CC_AMEX."
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_DISCOVER_DELIM",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\b6011(?:[\\s.-]\\d{4}){3}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Discover 6011 with delimiters. Complements CC_DISCOVER."
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_JCB_DELIM",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\b35(?:2[89]|[3-8]\\d)(?:[\\s.-]\\d{4}){3}\\b",
+      "flags": "g",
+      "replacement_token": "CC",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "JCB 16-digit with delimiters. Complements CC_JCB."
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_MASKED_LOOSE",
+      "region": "GLOBAL",
+      "priority": 96,
+      "confidence": "high",
+      "regex": "(?:[*•xX]{4}[\\s.-]?){2,4}\\d{4}",
+      "flags": "g",
+      "replacement_token": "CC",
+      "anti_patterns": [],
+      "notes": "Masked card with group separators (****-****-****-4444). v2.0 CC_MASKED has a \\b-before-* anchor that never fires; this covers the same intent with correct boundary handling."
+    },
+    {
+      "category": "Credit Card",
+      "name": "CC_MASKED_RUN",
+      "region": "GLOBAL",
+      "priority": 96,
+      "confidence": "high",
+      "regex": "[*•xX]{8,15}\\d{4}",
+      "flags": "g",
+      "replacement_token": "CC",
+      "anti_patterns": [],
+      "notes": "Masked card with no separators (************4444). See CC_MASKED_LOOSE for the rationale on dropping \\b."
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_US_PERMISSIVE",
+      "region": "US",
+      "priority": 99,
+      "confidence": "medium",
+      "regex": "\\(?[0-9]{3}\\)?[. -][0-9]{3}[. -][0-9]{4}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "US phone with permissive exchange (allows 0/1 in the second group — test numbers like 555-123-4567 are NANP-illegal but common in UX). **Engine context-gated: only matches when phone|tel|mobile|cell|contact|call|dial|fax|+|(digit appears within ±48 chars.** Same treatment as PHONE_INTL_FALLBACK. Without the gate, would over-redact serial numbers."
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_E164_SPACED",
+      "region": "INTL",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\+[1-9]\\d{0,3}(?:[\\s.-]?\\d){6,13}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "E.164 with embedded separators (+49 30 12345678, +81 3 1234 5678). Complements PHONE_E164 which requires consecutive digits."
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_AU_NATIONAL_PAREN",
+      "region": "AU",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\(0[2378]\\)[\\s.-]?\\d{4}[\\s.-]?\\d{4}\\b",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "AU landline with parenthesised area code: (03) 1234 5678. Complements PHONE_AU_NATIONAL."
+    },
+    {
+      "category": "Email",
+      "name": "EMAIL_OBFUSCATED_AT_ONLY",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\b[\\w.%+-]{1,64}\\s?(?:\\[at\\]|\\(at\\)|\\{at\\})\\s?[\\w.-]{2,253}\\.[\\w-]{2,24}\\b",
+      "flags": "g",
+      "replacement_token": "EMAIL",
+      "anti_patterns": [],
+      "notes": "Obfuscated email with (at)/[at]/{at} but a literal dot (user(at)example.com). v2.0 EMAIL_OBFUSCATED requires both (at) AND (dot), which is too strict for common obfuscation forms."
+    },
+    {
+      "category": "Email",
+      "name": "EMAIL_IN_ATTR_LOOSE",
+      "region": "GLOBAL",
+      "priority": 104,
+      "confidence": "high",
+      "regex": "(?<=(?:title|aria-label|aria-description|data-user|data-customer|alt|content)[\\s]*=[\"'])[^\"']*[\\w.%+-]{1,64}@(?:[\\w-]+\\.){1,63}[\\w-]{2,24}[^\"']*(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "EMAIL",
+      "anti_patterns": [],
+      "context_boosters": [
+        "EMAIL"
+      ],
+      "notes": "Emails in title/alt/aria-description/data-user/data-customer/content attributes, or embedded in descriptive text within an attribute value (e.g. title=\"Email: admin@test.com\"). v2.0 EMAIL_IN_ATTR covered a narrower attribute list and required the attribute value to BE the email, not contain it."
+    },
+    {
+      "category": "Phone",
+      "name": "PHONE_IN_ATTR_LOOSE",
+      "region": "GLOBAL",
+      "priority": 104,
+      "confidence": "high",
+      "regex": "(?<=(?:value|placeholder|data-phone|aria-label)[\\s]*=[\"'])\\+?[\\d\\s.+()-]{7,30}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "PHONE",
+      "anti_patterns": [],
+      "context_boosters": [
+        "PHONE"
+      ],
+      "notes": "Phone in HTML attributes including dashed forms (+1-555-123-4567). v2.0 PHONE_IN_ATTR's [\\d\\s] character class rejects dashes."
+    },
+    {
+      "category": "Auth/Secret",
+      "name": "API_KEY_GOOGLE_FLEX",
+      "region": "GLOBAL",
+      "priority": 99,
+      "confidence": "high",
+      "regex": "\\bAIza[0-9A-Za-z_-]{20,45}\\b",
+      "flags": "g",
+      "replacement_token": "API_KEY",
+      "anti_patterns": [],
+      "notes": "Google API key with variable length (20-45 chars after AIza). v2.0 API_KEY_GOOGLE requires exactly 35 chars, which misses several Google key types (browser keys, translate keys) that run shorter."
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "ACN_AU",
+      "region": "AU",
+      "priority": 100,
+      "confidence": "high",
+      "regex": "\\b\\d{3}[\\s]?\\d{3}[\\s]?\\d{3}\\b",
+      "flags": "g",
+      "replacement_token": "ACN",
+      "validator": "acn",
+      "anti_patterns": [
+        "suppress_if_preceded_by",
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "ACN"
+      ],
+      "notes": "AU Company Number — 9 digits with ASIC weighted checksum (weights 8,7,6,5,4,3,2,1 on digits 1-8; complement mod 10 must equal digit 9). Shares shape with TFN_AU_9; engine validator boost + ACN-keyword context boost disambiguate. Added v2.2.0."
+    },
+    {
+      "category": "Tax/Identity",
+      "name": "ACN_IN_ATTR",
+      "region": "GLOBAL",
+      "priority": 105,
+      "confidence": "high",
+      "regex": "(?<=(?:value|data-tax|data-customer)[\\s]*=[\"'])\\d{3}[\\s]?\\d{3}[\\s]?\\d{3}(?=[\"'])",
+      "flags": "g",
+      "replacement_token": "ACN",
+      "validator": "acn",
+      "anti_patterns": [],
+      "context_boosters": [
+        "ACN"
+      ],
+      "notes": "ACN inside HTML attributes. Added v2.2.0."
+    },
+    {
+      "category": "Date",
+      "name": "DOB_ISO",
+      "region": "GLOBAL",
+      "priority": 80,
+      "confidence": "medium",
+      "regex": "\\b(?:19|20)\\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])\\b",
+      "flags": "g",
+      "replacement_token": "DOB",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "DOB"
+      ],
+      "notes": "Date of birth in ISO YYYY-MM-DD form. **Engine context-gated** — only matches when dob/d.o.b./date of birth/birth/birthday/born appears within ±48 chars. Without the gate this would over-redact every ordinary ISO date. Added v2.2.0."
+    },
+    {
+      "category": "Date",
+      "name": "DOB_LONG",
+      "region": "GLOBAL",
+      "priority": 80,
+      "confidence": "medium",
+      "regex": "\\b(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\s+(?:0?[1-9]|[12]\\d|3[01])(?:st|nd|rd|th)?,?\\s+(?:19|20)\\d{2}|(?:0?[1-9]|[12]\\d|3[01])(?:st|nd|rd|th)?\\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?),?\\s+(?:19|20)\\d{2})\\b",
+      "flags": "gi",
+      "replacement_token": "DOB",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "context_boosters": [
+        "DOB"
+      ],
+      "notes": "Date of birth in spelled-out month form: 'March 15, 1990' / '15 March 1990' / '15th March 1990' / 'Mar 15 1990'. **Engine context-gated** same as DOB_ISO. Added v2.2.0."
+    },
+    {
+      "category": "Date",
+      "name": "DOB_BORN",
+      "region": "GLOBAL",
+      "priority": 85,
+      "confidence": "high",
+      "regex": "\\bborn(?:\\s+in)?\\s+(?:19|20)\\d{2}\\b",
+      "flags": "gi",
+      "replacement_token": "DOB",
+      "anti_patterns": [
+        "suppress_if_ref_attribute"
+      ],
+      "notes": "Year-only DOB preceded by 'born' / 'born in'. Engine prefix-trims the 'born ' prefix so only the year becomes {{REDACTED_DOB}}. The 'born' keyword is itself the signal — no further context gate needed. Added v2.2.0."
+    }
+  ],
+  "safe_list": {
+    "hosts": [
+      "localhost",
+      "127.0.0.1",
+      "0.0.0.0",
+      "::1"
+    ],
+    "emails": [
+      "noreply@example.com",
+      "user@example.com",
+      "test@test.com"
+    ],
+    "dom_tokens": [
+      "button",
+      "submit",
+      "input",
+      "textbox",
+      "combobox",
+      "listbox",
+      "checkbox",
+      "link",
+      "dialog"
+    ],
+    "cc_test_pans": [
+      "4111111111111111",
+      "5555555555554444",
+      "378282246310005",
+      "6011111111111117",
+      "30569309025904"
+    ]
+  }
+}

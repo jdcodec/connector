@@ -1,0 +1,69 @@
+{
+  "name": "jdcodec",
+  "version": "0.3.0",
+  "description": "JD Codec — local MCP proxy that compresses browser-agent snapshots ~80%+ via a cloud codec, with on-device PII redaction. The privacy-first connector for Playwright MCP and any MCP-capable agent.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "jdcodec": "dist/index.js",
+    "jdcodec-connector": "dist/index.js"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run grep-gate && vitest run",
+    "test:unit": "vitest run",
+    "grep-gate": "bash scripts/grep-gate.sh",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "mcp",
+    "playwright",
+    "playwright-mcp",
+    "browser-automation",
+    "ai-agents",
+    "llm",
+    "token-compression",
+    "privacy",
+    "pii-redaction",
+    "claude-code",
+    "cursor",
+    "model-context-protocol"
+  ],
+  "author": "JD Codec <hello@jdcodec.com>",
+  "license": "Apache-2.0",
+  "homepage": "https://jdcodec.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdcodec/connector.git"
+  },
+  "bugs": {
+    "url": "mailto:hello@jdcodec.com"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "dotenv": "^16.3.1",
+    "node-fetch": "^2.7.0",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/node-fetch": "^2.6.4",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
