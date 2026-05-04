@@ -35,8 +35,6 @@ jdcodec --help
 
 A Python distribution is also available — `pip install jdcodec` is a thin wrapper around the same connector binary, fetched and run via `npx`. Either entry point works; pick whichever fits your project's primary language.
 
-> **Note on `@jdcodec/cli`.** An earlier package called `@jdcodec/cli` exists on npm. It is a separate diagnostic / waitlist CLI and is now deprecated — install `jdcodec` (this package) for the actual MCP proxy.
-
 ---
 
 ## Configure your API key

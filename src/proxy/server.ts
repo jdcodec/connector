@@ -11,7 +11,115 @@ import type { UpstreamSession } from "./upstream.js";
 import { handleSnapshot } from "./snapshot.js";
 import type { Logger } from "./snapshot.js";
 
-const SNAPSHOT_TOOL = "browser_snapshot";
+/**
+ * Context handed to every interceptor. Mirrors the slice of `ProxyDeps` that
+ * an interceptor actually needs — keeps the per-tool implementation honest
+ * about its dependencies.
+ */
+export interface InterceptDeps {
+  upstream: UpstreamSession;
+  cloud: CloudClient | null;
+  session: SessionState;
+  bypass: boolean;
+  log: Logger;
+}
+
+/** Result shape mirrors the MCP SDK `CallToolResult`. */
+export interface ToolInterceptResult {
+  content: Array<{ type: "text"; text: string }>;
+  isError?: boolean;
+}
+
+/**
+ * Tool-name interceptor. Receives the upstream call's already-fetched
+ * result so the interceptor doesn't decide *whether* to call upstream —
+ * that's the registry's job. The interceptor decides what to do with the
+ * response (e.g. run Privacy Shield + cloud POST for `browser_snapshot`).
+ */
+export type ToolInterceptor = (
+  args: Record<string, unknown>,
+  upstreamResult: { text: string; isError?: boolean },
+  deps: InterceptDeps,
+) => Promise<ToolInterceptResult>;
+
+/**
+ * `browser_snapshot` adapter — the only interceptor in M1. Drives Privacy
+ * Shield + the cloud codec POST via `handleSnapshot()`. Forwards upstream
+ * errors verbatim so a Playwright failure surfaces to the agent.
+ */
+async function browserSnapshotInterceptor(
+  _args: Record<string, unknown>,
+  upstreamResult: { text: string; isError?: boolean },
+  deps: InterceptDeps,
+): Promise<ToolInterceptResult> {
+  if (upstreamResult.isError) {
+    return {
+      content: [{ type: "text", text: upstreamResult.text }],
+      isError: true,
+    };
+  }
+  try {
+    const handled = await handleSnapshot(upstreamResult.text, {
+      cloud: deps.cloud,
+      session: deps.session,
+      bypass: deps.bypass,
+      log: deps.log,
+    });
+    return { content: [{ type: "text", text: handled.text }] };
+  } catch (err) {
+    deps.log.error("snapshot.unexpected_error", {
+      message: (err as Error)?.message ?? "unknown",
+    });
+    return {
+      content: [
+        {
+          type: "text",
+          text: "[JDCodec: snapshot handler failed; see connector logs]",
+        },
+      ],
+      isError: true,
+    };
+  }
+}
+
+/**
+ * Default tool-interceptor registry. One entry today; the registry shape
+ * exists so future framework adapters (browser-use, Stagehand, direct CDP)
+ * can add interceptors without editing the request handler.
+ *
+ * Production code reads from this default. Tests inject their own registry
+ * via `ProxyDeps.interceptors` to verify the dispatch path with synthetic
+ * tool names.
+ */
+export const DEFAULT_INTERCEPTORS: ReadonlyMap<string, ToolInterceptor> =
+  new Map<string, ToolInterceptor>([
+    ["browser_snapshot", browserSnapshotInterceptor],
+  ]);
+
+/**
+ * Returned by the call-time auth gate when a tool that needs the cloud
+ * codec is invoked without a key configured. Plain English so the agent
+ * can relay it directly to the user; structured `isError: true` so MCP
+ * clients render it as an error rather than an answer.
+ */
+function authRequiredResponse(toolName: string): ToolInterceptResult {
+  const text = [
+    `JDCodec: API key required for ${toolName}.`,
+    "",
+    "Get a key:",
+    "  1. Run: jdcodec start",
+    "  2. Wait for your key by email (~24h during early access).",
+    "  3. Save it to ~/.jdcodec/config.json:",
+    `       { "api_key": "jdck_yourid.yoursecret" }`,
+    "  4. Restart your AI client so the connector picks up the key.",
+    "",
+    "Run `jdcodec doctor` for a full diagnostic.",
+  ].join("\n");
+  return {
+    content: [{ type: "text" as const, text }],
+    isError: true,
+  };
+}
 
 export interface ProxyDeps {
   upstream: UpstreamSession;
@@ -20,6 +128,12 @@ export interface ProxyDeps {
   log: Logger;
   // Optional transport injection for tests; production path uses stdio.
   transport?: Transport;
+  /**
+   * Optional interceptor registry override. Defaults to
+   * `DEFAULT_INTERCEPTORS` (which today contains only `browser_snapshot`).
+   * Tests pass synthetic registries to exercise the dispatch path.
+   */
+  interceptors?: ReadonlyMap<string, ToolInterceptor>;
 }
 
 export interface ProxyHandle {
@@ -28,16 +142,20 @@ export interface ProxyHandle {
 }
 
 /**
- * Assemble the proxy server. `browser_snapshot` is intercepted: response text
- * is handed to handleSnapshot() which runs Privacy Shield + cloud POST.
- * Everything else passes through verbatim — upstream's actual inputSchema is
- * preserved on tools/list so the agent knows what args to send, and arguments
- * are forwarded untouched on tools/call. Using the low-level Server (rather
- * than McpServer) is what lets us pass arbitrary args without forcing every
- * upstream JSON Schema through a Zod conversion.
+ * Assemble the proxy server. Tools listed in the interceptor registry
+ * (default: `browser_snapshot` → `handleSnapshot`) get their upstream
+ * response handed to the matching interceptor — typically Privacy Shield
+ * + the cloud codec POST. Everything else passes through verbatim:
+ * upstream's actual `inputSchema` is preserved on `tools/list` so the
+ * agent knows what args to send, and arguments are forwarded untouched
+ * on `tools/call`. Using the low-level `Server` (rather than `McpServer`)
+ * is what lets us pass arbitrary args without forcing every upstream JSON
+ * Schema through a Zod conversion — that conversion would silently strip
+ * passthrough tool arguments.
  */
 export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
   const { upstream, cloud, bypass, log } = deps;
+  const interceptors = deps.interceptors ?? DEFAULT_INTERCEPTORS;
   const session = new SessionState();
 
   const server = new Server(
@@ -66,36 +184,38 @@ export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
     const name = request.params.name;
     const args = (request.params.arguments ?? {}) as Record<string, unknown>;
 
-    if (name === SNAPSHOT_TOOL) {
+    const interceptor = interceptors.get(name);
+
+    // Call-time auth gate. Tools registered as interceptors today only
+    // exist to wrap the cloud-codec round-trip (browser_snapshot). With
+    // no API key and no bypass, there's nothing useful we can do for
+    // them — fail fast with an actionable error instead of firing the
+    // upstream call (which would, for browser_snapshot, take an actual
+    // browser snapshot we can't compress).
+    if (interceptor && cloud === null && !bypass) {
+      log.warn("auth.missing_for_tool", { tool: name });
+      return authRequiredResponse(name) as unknown as {
+        content: Array<{ type: "text"; text: string }>;
+        isError?: boolean;
+      };
+    }
+
+    if (interceptor) {
       const upstreamResult = await upstream.callTool(name, args);
-      if (upstreamResult.isError) {
-        return {
-          content: [{ type: "text", text: upstreamResult.text }],
-          isError: true,
-        };
-      }
-      try {
-        const handled = await handleSnapshot(upstreamResult.text, {
-          cloud,
-          session,
-          bypass,
-          log,
-        });
-        return { content: [{ type: "text", text: handled.text }] };
-      } catch (err) {
-        log.error("snapshot.unexpected_error", {
-          message: (err as Error)?.message ?? "unknown",
-        });
-        return {
-          content: [
-            {
-              type: "text",
-              text: "[JDCodec: snapshot handler failed; see connector logs]",
-            },
-          ],
-          isError: true,
-        };
-      }
+      const intercepted = await interceptor(args, upstreamResult, {
+        upstream,
+        cloud,
+        session,
+        bypass,
+        log,
+      });
+      // The MCP SDK's `setRequestHandler` return type unions a task-shape
+      // variant onto the basic `CallToolResult`. Our `ToolInterceptResult`
+      // is the basic shape (no task field); structurally compatible with
+      // the basic variant at runtime, but TS narrows through the union
+      // and complains. Cast through unknown so the interceptor contract
+      // stays clean while satisfying the SDK's signature.
+      return intercepted as unknown as { content: Array<{ type: "text"; text: string }>; isError?: boolean };
     }
 
     const result = await upstream.callTool(name, args);
@@ -112,6 +232,7 @@ export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
     tool_count: upstream.getTools().length,
     bypass,
     cloud_enabled: cloud !== null,
+    interceptor_count: interceptors.size,
   });
 
   return {
