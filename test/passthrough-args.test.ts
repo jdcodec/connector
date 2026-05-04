@@ -4,8 +4,8 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { startProxy } from "../src/proxy/server.js";
 import type { UpstreamSession, UpstreamTool } from "../src/proxy/upstream.js";
 
-// Regression test for BUG-001: every passthrough tool used to be registered
-// with `inputSchema: {}` via `McpServer.registerTool`, which caused the SDK to
+// Regression test: every passthrough tool used to be registered with
+// `inputSchema: {}` via `McpServer.registerTool`, which caused the SDK to
 // strip every property of `tools/call.arguments` before invoking the handler.
 // `browser_navigate {url: "https://example.com"}` arrived at upstream as `{}`,
 // failing Playwright MCP's Zod check. This file pins three guarantees:
@@ -120,7 +120,7 @@ async function wireProxyAndClient(): Promise<{
   };
 }
 
-describe("proxy passthrough — BUG-001 regression", () => {
+describe("proxy passthrough — argument-forwarding regression", () => {
   it("tools/list advertises the upstream's real inputSchema (not empty)", async () => {
     const { client, shutdown } = await wireProxyAndClient();
     try {

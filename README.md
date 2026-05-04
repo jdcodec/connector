@@ -35,8 +35,6 @@ jdcodec --help
 
 A Python distribution is also available — `pip install jdcodec` is a thin wrapper around the same connector binary, fetched and run via `npx`. Either entry point works; pick whichever fits your project's primary language.
 
-> **Note on `@jdcodec/cli`.** An earlier package called `@jdcodec/cli` exists on npm. It is a separate diagnostic / waitlist CLI and is now deprecated — install `jdcodec` (this package) for the actual MCP proxy.
-
 ---
 
 ## Configure your API key
@@ -78,7 +76,7 @@ Any MCP-capable client that spawns a stdio command can use the connector — the
 
 The connector spawns Playwright MCP itself as a subprocess and proxies everything. Your agent sees the same tools it always did (`browser_snapshot`, `browser_click`, etc.) with no behaviour changes beyond smaller snapshots.
 
-**Claude Code:** `claude mcp add --scope user jdcodec -- jdcodec`
+**Claude Code (CLI + Claude VS Code extension):** `claude mcp add --scope user jdcodec -- jdcodec`. Both the Claude Code terminal CLI and Anthropic's Claude VS Code extension read MCP servers from `~/.claude.json`, so this single command wires both.
 
 **Cursor:** add to `~/.cursor/mcp.json`:
 
