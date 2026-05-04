@@ -1,0 +1,6 @@
+# Defence-in-depth — `test/grep-gate.test.ts` writes intentional
+# violation fixtures into this directory to verify the gate catches
+# them. Cleanup happens in a `beforeAll`/`afterAll` PLUS a per-test
+# `finally`, but if all three fail this gitignore is the last line
+# of defence preventing a leftover fixture from being committed.
+src/_grep_gate_test_violation/

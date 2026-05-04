@@ -14,19 +14,60 @@
 
 import { loadConfig } from "./config/env.js";
 import { CloudClient } from "./cloud/client.js";
+import {
+  isHelpFlag,
+  isOnboardingCommand,
+  isVersionFlag,
+  printHelp,
+  printVersion,
+  runOnboarding,
+} from "./onboarding/index.js";
 import { makeStderrLogger } from "./proxy/log.js";
 import { startProxy } from "./proxy/server.js";
 import { UpstreamSession } from "./proxy/upstream.js";
 
 async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const first = args[0];
+
+  // Onboarding subcommands (start / login / audit) run a one-shot
+  // interactive flow and exit. They never reach the MCP proxy path,
+  // so stdout is free for human-readable output and the proxy's stdio
+  // protocol is unaffected. Anything else (including no args) falls
+  // through to the proxy below — invoking `jdcodec` with no arguments
+  // continues to launch the MCP stdio proxy.
+  if (isOnboardingCommand(first)) {
+    const code = await runOnboarding(args);
+    process.exit(code);
+  }
+  if (isHelpFlag(first)) {
+    printHelp();
+    process.exit(0);
+  }
+  if (isVersionFlag(first)) {
+    // Read the cloud endpoint from config so a JDC_CLOUD_URL override is
+    // visible without a separate command. No API key required — the
+    // endpoint string itself is non-sensitive.
+    printVersion(loadConfig().cloudUrl);
+    process.exit(0);
+  }
+
   const log = makeStderrLogger();
   const config = loadConfig();
 
+  // Degraded-mode startup: missing key is no longer fatal. The MCP
+  // protocol gives every client a window to start servers + register
+  // tools at session boot; a server that exits before that window
+  // closes is silently dropped from every client (Claude Code, the
+  // Claude VS Code extension, Cursor, Windsurf, VS Code Copilot, etc.)
+  // — spec-level behaviour, not client-specific. We instead start, log
+  // a clear warning, and gate cloud-requiring tools at call time so
+  // the agent surfaces an actionable error inside its own UI on the
+  // first compression attempt.
   if (!config.apiKey && !config.bypass) {
-    log.error("config.missing_api_key", {
-      hint: "Set JDC_API_KEY or write {\"api_key\": \"...\"} to ~/.jdcodec/config.json. Or run with JDC_BYPASS=1 for local debugging.",
+    log.warn("config.no_api_key", {
+      hint: "Connector starting in degraded mode. Snapshot tools will return auth_required until a key is configured. Run `jdcodec start` to register, then save the issued bearer to ~/.jdcodec/config.json (or set JDC_API_KEY). Run `jdcodec doctor` for a full diagnostic.",
     });
-    process.exit(2);
   }
 
   const cloud = config.apiKey && !config.bypass
