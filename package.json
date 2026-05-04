@@ -1,6 +1,6 @@
 {
   "name": "jdcodec",
-  "version": "0.3.1",
+  "version": "0.5.2",
   "description": "JD Codec — local MCP proxy that compresses browser-agent snapshots ~80%+ via a cloud codec, with on-device PII redaction. The privacy-first connector for Playwright MCP and any MCP-capable agent.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,9 +18,10 @@
     "build": "tsc",
     "test": "npm run grep-gate && vitest run",
     "test:unit": "vitest run",
+    "test:correctness": "npm run grep-gate && vitest run --exclude 'test/performance.test.ts'",
     "grep-gate": "bash scripts/grep-gate.sh",
     "start": "node dist/index.js",
-    "prepublishOnly": "npm run build && npm test"
+    "prepublishOnly": "npm run build && npm run test:correctness"
   },
   "engines": {
     "node": ">=22"

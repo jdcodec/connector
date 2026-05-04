@@ -35,7 +35,7 @@ jdcodec --help
 
 A Python distribution is also available — `pip install jdcodec` is a thin wrapper around the same connector binary, fetched and run via `npx`. Either entry point works; pick whichever fits your project's primary language.
 
-> **Note on `@jdcodec/cli`.** An earlier package called `@jdcodec/cli` exists on npm. It is a separate diagnostic / waitlist CLI and is now deprecated — install `jdcodec` (this package) for the actual MCP proxy.
+> **Note on `@jdcodec/cli`.** An earlier package called `@jdcodec/cli` exists on npm — the legacy painted-door waitlist CLI. It is being retired during PROD-029 (waitlist onboarding moves into `jdcodec` itself). For now: install `jdcodec` (this package) for the MCP proxy; for waitlist signup use `pip install jdcodec` (canonical) or the legacy `@jdcodec/cli` until PROD-029 PR-C lights up the equivalent `jdcodec start` subcommand here.
 
 ---
 
