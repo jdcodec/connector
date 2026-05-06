@@ -9,12 +9,33 @@ export interface RedactResult {
   snapshotYaml: string;
   url?: string;
   redactionStats: RedactionStats;
+  /** Per-match span detail. Populated only when `RedactOptions.captureSpans` is true. */
+  spans?: RedactSpan[];
+}
+
+export interface RedactSpan {
+  ruleName: string;
+  category: string;
+  /** Origin of the matched text — body of the snapshot or the URL. */
+  source: "body" | "url";
+  /** Char offset within `source` text, post-prefix-trim. */
+  start: number;
+  end: number;
+  /** Verbatim matched substring. Only emitted in trace mode — never logged in production. */
+  value: string;
 }
 
 export type RedactScope = "body" | "url" | "both";
 
 export interface RedactOptions {
   scope?: RedactScope;
+  /**
+   * When true, populate `spans[]` on the result with per-match detail
+   * (rule name, offsets, raw matched value). Off by default. Trace-only:
+   * the connector wires this on solely when JDC_TRACE=1; production code
+   * paths must never enable it (raw matched values are PII by definition).
+   */
+  captureSpans?: boolean;
 }
 
 export interface RawRule {
