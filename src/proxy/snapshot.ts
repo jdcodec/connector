@@ -1,14 +1,25 @@
+import { mkdirSync, appendFileSync } from "node:fs";
+import { join } from "node:path";
+import { createHash } from "node:crypto";
 import { redact, JdcPrivacyEngineError } from "../privacy/index.js";
+import type { RedactSpan } from "../privacy/index.js";
 import { CloudClient } from "../cloud/client.js";
 import { CloudNetworkError, CloudRequestError } from "../cloud/errors.js";
 import { SessionState } from "../session/state.js";
 import { extractUrlFromResponse, joinSnapshotYaml, splitSnapshotYaml } from "./parse.js";
+
+export interface TraceConfig {
+  /** Directory to write per-session JSONL span files into. */
+  dir: string;
+}
 
 export interface HandleSnapshotDeps {
   cloud: CloudClient | null;
   session: SessionState;
   bypass: boolean;
   log?: Logger;
+  /** When set, redact in span-capture mode and append spans to JSONL. Off by default. */
+  trace?: TraceConfig;
 }
 
 export interface Logger {
@@ -54,7 +65,7 @@ export async function handleSnapshot(
   mcpResponseText: string,
   deps: HandleSnapshotDeps,
 ): Promise<HandleSnapshotResult> {
-  const { cloud, session, bypass } = deps;
+  const { cloud, session, bypass, trace } = deps;
   const log = deps.log ?? noopLogger;
 
   // Privacy Shield — mandatory on every path, including bypass + degraded.
@@ -64,10 +75,12 @@ export async function handleSnapshot(
   // because the ```yaml and ``` fences are non-PII tokens the engine won't rewrite.
   let redactedFull: string;
   let redactionStats: Record<string, number>;
+  let redactSpans: RedactSpan[] | undefined;
   try {
-    const result = redact(mcpResponseText);
+    const result = redact(mcpResponseText, trace ? { captureSpans: true } : {});
     redactedFull = result.snapshotYaml;
     redactionStats = result.redactionStats;
+    redactSpans = result.spans;
   } catch (err) {
     if (err instanceof JdcPrivacyEngineError) {
       log.error("privacy.engine.block", { code: err.code });
@@ -77,6 +90,10 @@ export async function handleSnapshot(
       };
     }
     throw err;
+  }
+
+  if (trace && redactSpans && redactSpans.length > 0) {
+    writeTraceSpans(trace, session, mcpResponseText, redactSpans, log);
   }
 
   const split = splitSnapshotYaml(redactedFull);
@@ -195,4 +212,52 @@ function degradedPath(
   }
   // Unexpected — re-raise so upstream can surface.
   throw err;
+}
+
+/**
+ * JDC_TRACE writer. Appends one JSONL line per matched redaction span to
+ * `${dir}/spans-<sessionId>.jsonl`. Best-effort — a write failure logs and
+ * is otherwise swallowed (trace is a debug aid, not a correctness path).
+ *
+ * Privacy posture: this is the ONE place in the connector where raw matched
+ * substrings (real PII when the rule fires correctly) are written to disk.
+ * Gated entirely on JDC_TRACE=1; default off; opt-in by the developer who
+ * already has access to the snapshot text in question. Writes go to a
+ * developer-controlled local directory; nothing leaves the machine.
+ */
+function writeTraceSpans(
+  trace: TraceConfig,
+  session: SessionState,
+  rawInput: string,
+  spans: RedactSpan[],
+  log: Logger,
+): void {
+  try {
+    mkdirSync(trace.dir, { recursive: true });
+    const snap = session.peek();
+    const snapshotHash = createHash("sha256")
+      .update(rawInput)
+      .digest("hex")
+      .slice(0, 16);
+    const path = join(trace.dir, `spans-${snap.sessionId}.jsonl`);
+    const ts = new Date().toISOString();
+    const lines = spans.map((s) =>
+      JSON.stringify({
+        ts,
+        session_id: snap.sessionId,
+        task_id: snap.taskId,
+        step: snap.step,
+        snapshot_hash: snapshotHash,
+        rule: s.ruleName,
+        category: s.category,
+        source: s.source,
+        start: s.start,
+        end: s.end,
+        value: s.value,
+      }),
+    );
+    appendFileSync(path, lines.join("\n") + "\n", "utf8");
+  } catch (err) {
+    log.warn("trace.write_failed", { message: (err as Error)?.message ?? "unknown" });
+  }
 }

@@ -1,0 +1,664 @@
+### Page
+- Page URL: https://www.bbc.com/news
+- Page Title: BBC News - Breaking news, video and the latest top stories from the U.S. and around the world
+- Console: 0 errors, 2 warnings
+### Snapshot
+```yaml
+- generic [active] [ref=e1]:
+  - alertdialog "Online Quality Survey" [ref=e2]:
+    - iframe [ref=e3]:
+      
+  - generic [ref=e5]:
+    - link "Skip to content" [ref=e6] [cursor=pointer]:
+      - /url: "#bbc-main"
+    - banner [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - button "Open menu" [ref=e11] [cursor=pointer]:
+            - img [ref=e12]
+          - link "Watch Live" [ref=e19] [cursor=pointer]:
+            - /url: /watch-live-news/
+            - generic [ref=e20]:
+              - img [ref=e22]
+              - generic [ref=e25]: Watch Live
+        - link "British Broadcasting Corporation" [ref=e29] [cursor=pointer]:
+          - /url: /
+          - img "British Broadcasting Corporation" [ref=e30]
+        - generic [ref=e33]:
+          - link "Register" [ref=e35] [cursor=pointer]:
+            - /url: https://session.bbc.com/session?action=register&userOrigin=BBCS_BBC&ptrt=https%3A%2F%2Fwww.bbc.com%2Fnews
+            - button "Register" [ref=e36]:
+              - generic [ref=e37]: Register
+          - link "Sign In" [ref=e39] [cursor=pointer]:
+            - /url: https://session.bbc.com/session?userOrigin=BBCS_BBC&ptrt=https%3A%2F%2Fwww.bbc.com%2Fnews
+            - button "Sign In" [ref=e40]:
+              - generic [ref=e41]: Sign In
+    - navigation [ref=e42]:
+      - navigation [ref=e44]:
+        - list [ref=e45]:
+          - listitem [ref=e46]:
+            - link "Home" [ref=e48] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e49]:
+            - link "News" [ref=e51] [cursor=pointer]:
+              - /url: /news
+          - listitem [ref=e52]:
+            - link "Sport" [ref=e54] [cursor=pointer]:
+              - /url: /sport
+          - listitem [ref=e55]:
+            - link "Business" [ref=e57] [cursor=pointer]:
+              - /url: /business
+          - listitem [ref=e58]:
+            - link "Technology" [ref=e60] [cursor=pointer]:
+              - /url: /technology
+          - listitem [ref=e61]:
+            - link "Health" [ref=e63] [cursor=pointer]:
+              - /url: /health
+          - listitem [ref=e64]:
+            - link "Culture" [ref=e66] [cursor=pointer]:
+              - /url: /culture
+          - listitem [ref=e67]:
+            - link "Arts" [ref=e69] [cursor=pointer]:
+              - /url: /arts
+          - listitem [ref=e70]:
+            - link "Travel" [ref=e72] [cursor=pointer]:
+              - /url: /travel
+          - listitem [ref=e73]:
+            - link "Earth" [ref=e75] [cursor=pointer]:
+              - /url: /future-planet
+          - listitem [ref=e76]:
+            - link "Audio" [ref=e78] [cursor=pointer]:
+              - /url: /audio
+          - listitem [ref=e79]:
+            - link "Video" [ref=e81] [cursor=pointer]:
+              - /url: /video
+          - listitem [ref=e82]:
+            - link "Live" [ref=e84] [cursor=pointer]:
+              - /url: /live
+      - navigation [ref=e85]:
+        - navigation [ref=e86]:
+          - list [ref=e87]:
+            - listitem [ref=e88]:
+              - link "US & Canada" [ref=e90] [cursor=pointer]:
+                - /url: /news/us-canada
+            - listitem [ref=e91]:
+              - link "UK" [ref=e93] [cursor=pointer]:
+                - /url: /news/uk
+            - listitem [ref=e94]:
+              - link "Africa" [ref=e96] [cursor=pointer]:
+                - /url: /news/world/africa
+            - listitem [ref=e97]:
+              - link "Asia" [ref=e99] [cursor=pointer]:
+                - /url: /news/world/asia
+            - listitem [ref=e100]:
+              - link "Australia" [ref=e102] [cursor=pointer]:
+                - /url: /news/world/australia
+            - listitem [ref=e103]:
+              - link "Europe" [ref=e105] [cursor=pointer]:
+                - /url: /news/world/europe
+            - listitem [ref=e106]:
+              - link "Latin America" [ref=e108] [cursor=pointer]:
+                - /url: /news/world/latin_america
+            - listitem [ref=e109]:
+              - link "Middle East" [ref=e111] [cursor=pointer]:
+                - /url: /news/world/middle_east
+            - listitem [ref=e112]:
+              - link "In Pictures" [ref=e114] [cursor=pointer]:
+                - /url: /news/in_pictures
+            - listitem [ref=e115]:
+              - link "BBC InDepth" [ref=e117] [cursor=pointer]:
+                - /url: /news/bbcindepth
+            - listitem [ref=e118]:
+              - link "BBC Verify" [ref=e120] [cursor=pointer]:
+                - /url: /news/bbcverify
+    - main [ref=e121]:
+      - article [ref=e122]:
+        - heading "News" [level=1] [ref=e129]:
+          - img "News" [ref=e130]
+        - generic [ref=e134]:
+          - generic [ref=e137]:
+            - link "Vessels in the Strait of Hormuz near Bandar Abbas, Iran, May 4, 2026. Amirhosein Khorgooi/ISNA/WANA" [ref=e141] [cursor=pointer]:
+              - /url: https://www.bbc.com/news/live/c1wz2ld4535t
+              - img "Vessels in the Strait of Hormuz near Bandar Abbas, Iran, May 4, 2026. Amirhosein Khorgooi/ISNA/WANA" [ref=e143]
+            - link "LIVE Iran warns US against being 'dragged back into quagmire' after day of attacks in Strait of Hormuz Donald Trump says the US \"shot down\" seven Iranian boats, a claim denied by Tehran. Iran fired missiles and drones at military and commercial ships, according to the US." [ref=e147] [cursor=pointer]:
+              - /url: https://www.bbc.com/news/live/c1wz2ld4535t
+              - generic [ref=e148]:
+                - generic [ref=e150]:
+                  - generic [ref=e151]:
+                    - img [ref=e152]
+                    - generic [ref=e155]: LIVE
+                  - heading "Iran warns US against being 'dragged back into quagmire' after day of attacks in Strait of Hormuz" [level=2] [ref=e156]
+                - paragraph [ref=e157]: Donald Trump says the US "shot down" seven Iranian boats, a claim denied by Tehran. Iran fired missiles and drones at military and commercial ships, according to the US.
+          - generic [ref=e160]:
+            - link "Grey smoke rising out from a residential district Explosion at China fireworks factory kills 26 people A blast at a fireworks factory in Hunan province has killed 26 people and injured 61, state media report. 2 hrs ago Asia" [ref=e164] [cursor=pointer]:
+              - /url: /news/articles/c70vqwengxno
+              - generic [ref=e165]:
+                - img "Grey smoke rising out from a residential district" [ref=e169]
+                - generic [ref=e170]:
+                  - heading "Explosion at China fireworks factory kills 26 people" [level=2] [ref=e173]
+                  - paragraph [ref=e174]: A blast at a fireworks factory in Hunan province has killed 26 people and injured 61, state media report.
+                  - generic [ref=e175]:
+                    - generic [ref=e176]: 2 hrs ago
+                    - generic: Asia
+            - link "Beyoncé, Rihanna and Katy Perry turn heads at this year's Met Gala The theme for 2026 Met Gala fundraiser is \"Costume Art\", exploring fashion as an embodied art form. 4 hrs ago US & Canada" [ref=e181] [cursor=pointer]:
+              - /url: /news/articles/c5y9wq9y0p1o
+              - generic [ref=e183]:
+                - heading "Beyoncé, Rihanna and Katy Perry turn heads at this year's Met Gala" [level=2] [ref=e186]
+                - paragraph [ref=e187]: The theme for 2026 Met Gala fundraiser is "Costume Art", exploring fashion as an embodied art form.
+                - generic [ref=e188]:
+                  - generic [ref=e189]: 4 hrs ago
+                  - generic: US & Canada
+            - link "Modi's BJP conquers Bengal, one of India's toughest political frontiers West Bengal’s verdict could reshape not just the state’s politics, but the future trajectory of Modi’s BJP. 20 hrs ago Asia" [ref=e194] [cursor=pointer]:
+              - /url: /news/articles/ce8pdvp5x5ro
+              - generic [ref=e196]:
+                - heading "Modi's BJP conquers Bengal, one of India's toughest political frontiers" [level=2] [ref=e199]
+                - paragraph [ref=e200]: West Bengal’s verdict could reshape not just the state’s politics, but the future trajectory of Modi’s BJP.
+                - generic [ref=e201]:
+                  - generic [ref=e202]: 20 hrs ago
+                  - generic: Asia
+          - generic [ref=e205]:
+            - link "Vijay A 'fun' superstar stuns rivals and reshapes politics in an Indian state Film star Vijay has defied naysayers to almost sweep Tamil Nadu polls, marking a break in the political order. 32 mins ago Asia" [ref=e209] [cursor=pointer]:
+              - /url: /news/articles/c8xwjx54zggo
+              - generic [ref=e210]:
+                - img "Vijay" [ref=e214]
+                - generic [ref=e215]:
+                  - heading "A 'fun' superstar stuns rivals and reshapes politics in an Indian state" [level=2] [ref=e218]
+                  - paragraph [ref=e219]: Film star Vijay has defied naysayers to almost sweep Tamil Nadu polls, marking a break in the political order.
+                  - generic [ref=e220]:
+                    - generic [ref=e221]: 32 mins ago
+                    - generic: Asia
+            - link "Rescue teams with a piece of the fuselage of China Eastern passenger jet Deadly China plane crash was caused by fuel cut-off, says report The Boeing 737 plane crashed into a Chinese hillside in 2022, killing all 132 people on board. 4 hrs ago Asia" [ref=e226] [cursor=pointer]:
+              - /url: /news/articles/ckgpy223y9go
+              - generic [ref=e227]:
+                - img "Rescue teams with a piece of the fuselage of China Eastern passenger jet" [ref=e231]
+                - generic [ref=e232]:
+                  - heading "Deadly China plane crash was caused by fuel cut-off, says report" [level=2] [ref=e235]
+                  - paragraph [ref=e236]: The Boeing 737 plane crashed into a Chinese hillside in 2022, killing all 132 people on board.
+                  - generic [ref=e237]:
+                    - generic [ref=e238]: 4 hrs ago
+                    - generic: Asia
+            - link "A police officer standing in front of a white car with a smashed windscreen surrounded by fire trucks Two killed and many injured after car driven into crowd in German city of Leipzig A 33-year-old German citizen was detained following the incident, the authorities say. 4 hrs ago Europe" [ref=e243] [cursor=pointer]:
+              - /url: /news/articles/ckgpzgxgz58o
+              - generic [ref=e244]:
+                - img "A police officer standing in front of a white car with a smashed windscreen surrounded by fire trucks" [ref=e248]
+                - generic [ref=e249]:
+                  - heading "Two killed and many injured after car driven into crowd in German city of Leipzig" [level=2] [ref=e252]
+                  - paragraph [ref=e253]: A 33-year-old German citizen was detained following the incident, the authorities say.
+                  - generic [ref=e254]:
+                    - generic [ref=e255]: 4 hrs ago
+                    - generic: Europe
+            - 'link "Lea Salonga ''We won''t see her because she''s Asian'': How Lea Salonga fought to be seen on Broadway Broadway icon and Disney princess Lea Salonga has paved the way for Asian actors - but it hasn''t been easy. 10 hrs ago Asia" [ref=e260] [cursor=pointer]':
+              - /url: /news/articles/ckgpnk4kkkro
+              - generic [ref=e261]:
+                - img "Lea Salonga" [ref=e265]
+                - generic [ref=e266]:
+                  - 'heading "''We won''t see her because she''s Asian'': How Lea Salonga fought to be seen on Broadway" [level=2] [ref=e269]'
+                  - paragraph [ref=e270]: Broadway icon and Disney princess Lea Salonga has paved the way for Asian actors - but it hasn't been easy.
+                  - generic [ref=e271]:
+                    - generic [ref=e272]: 10 hrs ago
+                    - generic: Asia
+        - generic [ref=e276]:
+          - link "Moment Indonesian river overflows from heavy rain" [ref=e279] [cursor=pointer]:
+            - /url: /news/videos/ckgpyel2n0eo
+            - generic [ref=e282]:
+              - img [ref=e284]
+              - heading "Moment Indonesian river overflows from heavy rain" [level=2] [ref=e286]
+          - link "Popular Australian author pleads guilty over child exploitation material" [ref=e289] [cursor=pointer]:
+            - /url: /news/articles/cg7pz2xj4l3o
+            - heading "Popular Australian author pleads guilty over child exploitation material" [level=2] [ref=e293]
+          - link "Rescuers among three dead after yacht sinks off Australian coast" [ref=e296] [cursor=pointer]:
+            - /url: /news/articles/cr5p36v5q79o
+            - heading "Rescuers among three dead after yacht sinks off Australian coast" [level=2] [ref=e300]
+          - link "Second hantavirus case confirmed after three die in suspected cruise ship outbreak" [ref=e303] [cursor=pointer]:
+            - /url: /news/articles/cy0294829ndo
+            - heading "Second hantavirus case confirmed after three die in suspected cruise ship outbreak" [level=2] [ref=e307]
+          - link "Blake Lively and Justin Baldoni settle lawsuit over It Ends With Us film" [ref=e310] [cursor=pointer]:
+            - /url: /news/articles/c936q7np647o
+            - heading "Blake Lively and Justin Baldoni settle lawsuit over It Ends With Us film" [level=2] [ref=e314]
+        - generic [ref=e315]:
+          - generic [ref=e319]:
+            - separator [ref=e321]
+            - heading "More to explore" [level=2] [ref=e324]
+          - generic [ref=e326]:
+            - generic [ref=e329]:
+              - link "Wu Yize with his parents" [ref=e333] [cursor=pointer]:
+                - /url: /sport/snooker/articles/cgrpwvlv149o
+                - img "Wu Yize with his parents" [ref=e335]
+              - link "The family sacrifices that helped Wu become world champion Wu Yize discusses the sacrifices made by his family on his journey to becoming China's second world snooker champion. 3 hrs ago Snooker" [ref=e339] [cursor=pointer]:
+                - /url: /sport/snooker/articles/cgrpwvlv149o
+                - generic [ref=e340]:
+                  - heading "The family sacrifices that helped Wu become world champion" [level=2] [ref=e343]
+                  - paragraph [ref=e344]: Wu Yize discusses the sacrifices made by his family on his journey to becoming China's second world snooker champion.
+                  - generic [ref=e345]:
+                    - generic [ref=e346]: 3 hrs ago
+                    - generic: Snooker
+            - link "Alpha robot Robots move in as waste firms struggle to find staff Humanoid robots are being added to the automation of waste sorting. 8 hrs ago" [ref=e351] [cursor=pointer]:
+              - /url: /news/articles/cvg0w84q1wyo
+              - generic [ref=e352]:
+                - img "Alpha robot" [ref=e356]
+                - generic [ref=e357]:
+                  - heading "Robots move in as waste firms struggle to find staff" [level=2] [ref=e360]
+                  - paragraph [ref=e361]: Humanoid robots are being added to the automation of waste sorting.
+                  - generic [ref=e363]: 8 hrs ago
+            - link "Aerial picture of a general view of the cruise ship MV Hondius stationary off the port of Praia, the capital of Cape Verde. What is the hantavirus that has been confirmed on an Atlantic cruise ship? While rare, the disease can be transmitted to humans through inhalation of airborne particles from dried rodent droppings. 2 hrs ago Africa" [ref=e367] [cursor=pointer]:
+              - /url: /news/articles/c8r8j1l6j0go
+              - generic [ref=e368]:
+                - img "Aerial picture of a general view of the cruise ship MV Hondius stationary off the port of Praia, the capital of Cape Verde." [ref=e372]
+                - generic [ref=e373]:
+                  - heading "What is the hantavirus that has been confirmed on an Atlantic cruise ship?" [level=2] [ref=e376]
+                  - paragraph [ref=e377]: While rare, the disease can be transmitted to humans through inhalation of airborne particles from dried rodent droppings.
+                  - generic [ref=e378]:
+                    - generic [ref=e379]: 2 hrs ago
+                    - generic: Africa
+            - generic [ref=e382]:
+              - link "Sougat Mukherjee and his wife, Sapna. They both have dark hair - hers is long - and they are both wearing traditional Indian dress and looking at the camera. Widow of falsely accused murder suspect plans to sue Scottish authorities Sapna Mukherjee said her husband Sougat's life was \"irreversibly destroyed\" after he was labelled a suspect. 3 hrs ago Glasgow & West Scotland" [ref=e386] [cursor=pointer]:
+                - /url: /news/articles/ckgw07yxyeko
+                - generic [ref=e387]:
+                  - img "Sougat Mukherjee and his wife, Sapna. They both have dark hair - hers is long - and they are both wearing traditional Indian dress and looking at the camera." [ref=e391]
+                  - generic [ref=e392]:
+                    - heading "Widow of falsely accused murder suspect plans to sue Scottish authorities" [level=2] [ref=e395]
+                    - paragraph [ref=e396]: Sapna Mukherjee said her husband Sougat's life was "irreversibly destroyed" after he was labelled a suspect.
+                    - generic [ref=e397]:
+                      - generic [ref=e398]: 3 hrs ago
+                      - generic: Glasgow & West Scotland
+              - link "Some Iranians fear the regime is now more entrenched - and ready for revenge Ordinary Iranians tell of worry about increased repression by authorities after the war is over. 1 day ago Middle East" [ref=e403] [cursor=pointer]:
+                - /url: /news/articles/clyp6xxyvzyo
+                - generic [ref=e405]:
+                  - heading "Some Iranians fear the regime is now more entrenched - and ready for revenge" [level=2] [ref=e408]
+                  - paragraph [ref=e409]: Ordinary Iranians tell of worry about increased repression by authorities after the war is over.
+                  - generic [ref=e410]:
+                    - generic [ref=e411]: 1 day ago
+                    - generic: Middle East
+              - link "What we know about Trump's 'Project Freedom' in Strait of Hormuz What does the operation entail and could it lead to a resumption of hostilities? 1 hr ago World" [ref=e416] [cursor=pointer]:
+                - /url: /news/articles/c4g437depzpo
+                - generic [ref=e418]:
+                  - heading "What we know about Trump's 'Project Freedom' in Strait of Hormuz" [level=2] [ref=e421]
+                  - paragraph [ref=e422]: What does the operation entail and could it lead to a resumption of hostilities?
+                  - generic [ref=e423]:
+                    - generic [ref=e424]: 1 hr ago
+                    - generic: World
+        - generic [ref=e428]:
+          - generic [ref=e429]:
+            - separator [ref=e431]
+            - heading "Most watched" [level=2] [ref=e434]
+          - generic [ref=e435]:
+            - link "1 Moment Indonesian river overflows from heavy rain" [ref=e438] [cursor=pointer]:
+              - /url: /news/videos/ckgpyel2n0eo
+              - generic [ref=e439]:
+                - generic [ref=e440]: "1"
+                - generic [ref=e442]:
+                  - img [ref=e444]
+                  - heading "Moment Indonesian river overflows from heavy rain" [level=2] [ref=e446]
+            - 'link "2 Watch: Met Gala sees Beyoncé''s return and a star-studded red carpet" [ref=e449] [cursor=pointer]':
+              - /url: /news/videos/cglpy0d7k5jo
+              - generic [ref=e450]:
+                - generic [ref=e451]: "2"
+                - generic [ref=e453]:
+                  - img [ref=e455]
+                  - 'heading "Watch: Met Gala sees Beyoncé''s return and a star-studded red carpet" [level=2] [ref=e457]'
+            - link "3 What is hantavirus? Cruise ship outbreak explained" [ref=e460] [cursor=pointer]:
+              - /url: /news/videos/cy02n4ll58vo
+              - generic [ref=e461]:
+                - generic [ref=e462]: "3"
+                - generic [ref=e464]:
+                  - img [ref=e466]
+                  - heading "What is hantavirus? Cruise ship outbreak explained" [level=2] [ref=e468]
+            - link "4 BBC reports from scene of fatal Indonesia train crash" [ref=e471] [cursor=pointer]:
+              - /url: /news/videos/c4g0zep6yl9o
+              - generic [ref=e472]:
+                - generic [ref=e473]: "4"
+                - generic [ref=e475]:
+                  - img [ref=e477]
+                  - heading "BBC reports from scene of fatal Indonesia train crash" [level=2] [ref=e479]
+            - link "5 Moment United Airlines flight strikes vehicle during landing" [ref=e482] [cursor=pointer]:
+              - /url: /news/videos/cr7pvgl9dpeo
+              - generic [ref=e483]:
+                - generic [ref=e484]: "5"
+                - generic [ref=e486]:
+                  - img [ref=e488]
+                  - heading "Moment United Airlines flight strikes vehicle during landing" [level=2] [ref=e490]
+        - generic [ref=e491]:
+          - generic [ref=e495]:
+            - separator [ref=e497]
+            - heading "Also in news" [level=2] [ref=e500]
+          - generic [ref=e502]:
+            - generic [ref=e505]:
+              - 'link "image unavailable Dolly Parton performs during \"Dolly: An Original Musical\" fireside chat and press conference at The Fisher Center for the Performing Arts on January 28, 2025 in Nashville, Tennessee." [ref=e509] [cursor=pointer]':
+                - /url: /news/articles/c98ryegj3m4o
+                - generic [ref=e510]:
+                  - img "image unavailable" [ref=e511]
+                  - 'img "Dolly Parton performs during \"Dolly: An Original Musical\" fireside chat and press conference at The Fisher Center for the Performing Arts on January 28, 2025 in Nashville, Tennessee." [ref=e512]'
+              - link "Dolly Parton cancels Las Vegas residency over health issues The 80-year-old country music star said it will take some time for her to be \"stage-performance ready\" again. 11 hrs ago US & Canada" [ref=e516] [cursor=pointer]:
+                - /url: /news/articles/c98ryegj3m4o
+                - generic [ref=e517]:
+                  - heading "Dolly Parton cancels Las Vegas residency over health issues" [level=2] [ref=e520]
+                  - paragraph [ref=e521]: The 80-year-old country music star said it will take some time for her to be "stage-performance ready" again.
+                  - generic [ref=e522]:
+                    - generic [ref=e523]: 11 hrs ago
+                    - generic: US & Canada
+            - generic [ref=e526]:
+              - link "image unavailable A muddy river rises up to a white bridge. Moment Indonesian river overflows from heavy rain A glamping facility was destroyed by the raging torrent in Bogor, West Java on 4 May. 3 hrs ago Asia" [ref=e530] [cursor=pointer]:
+                - /url: /news/videos/ckgpyel2n0eo
+                - generic [ref=e531]:
+                  - generic [ref=e533]:
+                    - generic [ref=e534]:
+                      - img "image unavailable" [ref=e535]
+                      - img "A muddy river rises up to a white bridge." [ref=e536]
+                    - img [ref=e539]
+                  - generic [ref=e541]:
+                    - heading "Moment Indonesian river overflows from heavy rain" [level=2] [ref=e544]
+                    - paragraph [ref=e545]: A glamping facility was destroyed by the raging torrent in Bogor, West Java on 4 May.
+                    - generic [ref=e546]:
+                      - generic [ref=e547]: 3 hrs ago
+                      - generic: Asia
+              - link "Britney Spears pleads guilty to reckless driving after arrest The 44-year-old will avoid jail time after her arrest in California earlier this year. 15 hrs ago US & Canada" [ref=e552] [cursor=pointer]:
+                - /url: /news/articles/ce9p09e5vnro
+                - generic [ref=e554]:
+                  - heading "Britney Spears pleads guilty to reckless driving after arrest" [level=2] [ref=e557]
+                  - paragraph [ref=e558]: The 44-year-old will avoid jail time after her arrest in California earlier this year.
+                  - generic [ref=e559]:
+                    - generic [ref=e560]: 15 hrs ago
+                    - generic: US & Canada
+              - link "GameStop makes $55.5bn takeover offer for eBay GameStop's boss Ryan Cohen says he sees potential to make eBay a much bigger rival to Amazon. 17 hrs ago Business" [ref=e565] [cursor=pointer]:
+                - /url: /news/articles/cn0p8yled1do
+                - generic [ref=e567]:
+                  - heading "GameStop makes $55.5bn takeover offer for eBay" [level=2] [ref=e570]
+                  - paragraph [ref=e571]: GameStop's boss Ryan Cohen says he sees potential to make eBay a much bigger rival to Amazon.
+                  - generic [ref=e572]:
+                    - generic [ref=e573]: 17 hrs ago
+                    - generic: Business
+            - link "image unavailable An emergency doctor looks at a damaged high-rise building Ukrainian drone hits upmarket Moscow high-rise ahead of Victory Day celebrations Russia has declared a unilateral ceasefire to cover the event and threatened a massive strike on central Kyiv if it were disrupted. 13 hrs ago Europe" [ref=e578] [cursor=pointer]:
+              - /url: /news/articles/cwy234llx3vo
+              - generic [ref=e579]:
+                - generic [ref=e582]:
+                  - img "image unavailable" [ref=e583]
+                  - img "An emergency doctor looks at a damaged high-rise building" [ref=e584]
+                - generic [ref=e585]:
+                  - heading "Ukrainian drone hits upmarket Moscow high-rise ahead of Victory Day celebrations" [level=2] [ref=e588]
+                  - paragraph [ref=e589]: Russia has declared a unilateral ceasefire to cover the event and threatened a massive strike on central Kyiv if it were disrupted.
+                  - generic [ref=e590]:
+                    - generic [ref=e591]: 13 hrs ago
+                    - generic: Europe
+            - link "image unavailable Gen Assimi Goïta is pictured wearing a white cap at top. He also wears an earpiece. Mali junta leader names himself defence minister after predecessor killed Former Defence Minister Sadio Camara was killed in a massive offensive by combined jihadist and separatist forces. 14 hrs ago Africa" [ref=e596] [cursor=pointer]:
+              - /url: /news/articles/c8r8jr7x8mlo
+              - generic [ref=e597]:
+                - generic [ref=e600]:
+                  - img "image unavailable" [ref=e601]
+                  - img "Gen Assimi Goïta is pictured wearing a white cap at top. He also wears an earpiece." [ref=e602]
+                - generic [ref=e603]:
+                  - heading "Mali junta leader names himself defence minister after predecessor killed" [level=2] [ref=e606]
+                  - paragraph [ref=e607]: Former Defence Minister Sadio Camara was killed in a massive offensive by combined jihadist and separatist forces.
+                  - generic [ref=e608]:
+                    - generic [ref=e609]: 14 hrs ago
+                    - generic: Africa
+            - link "image unavailable A medium-sized green boat with the works 'Guardia Civil' on the side sails in the ocean. There are a few silhouettes of smaller boats in the far distance. Spain seizes record amount of cocaine in Atlantic Ocean, authorities say The Civil Guard found between 30,000 and 45,000kg of the drug on a freighter headed to Libya. 14 hrs ago Europe" [ref=e614] [cursor=pointer]:
+              - /url: /news/articles/cp8pn8py5gro
+              - generic [ref=e615]:
+                - generic [ref=e618]:
+                  - img "image unavailable" [ref=e619]
+                  - img "A medium-sized green boat with the works 'Guardia Civil' on the side sails in the ocean. There are a few silhouettes of smaller boats in the far distance." [ref=e620]
+                - generic [ref=e621]:
+                  - heading "Spain seizes record amount of cocaine in Atlantic Ocean, authorities say" [level=2] [ref=e624]
+                  - paragraph [ref=e625]: The Civil Guard found between 30,000 and 45,000kg of the drug on a freighter headed to Libya.
+                  - generic [ref=e626]:
+                    - generic [ref=e627]: 14 hrs ago
+                    - generic: Europe
+        - generic [ref=e631]:
+          - generic [ref=e632]:
+            - separator [ref=e634]
+            - heading "Most read" [level=2] [ref=e637]
+          - generic [ref=e638]:
+            - link "1 The most talked-about looks at this year's Met Gala" [ref=e641] [cursor=pointer]:
+              - /url: /news/articles/c5y9wq9y0p1o
+              - generic [ref=e642]:
+                - generic [ref=e643]: "1"
+                - heading "The most talked-about looks at this year's Met Gala" [level=2] [ref=e646]
+            - link "2 Deadly China plane crash was caused by fuel cut-off, says report" [ref=e649] [cursor=pointer]:
+              - /url: /news/articles/ckgpy223y9go
+              - generic [ref=e650]:
+                - generic [ref=e651]: "2"
+                - heading "Deadly China plane crash was caused by fuel cut-off, says report" [level=2] [ref=e654]
+            - link "3 US strikes Iranian fast boats as Iran attacks UAE oil facility" [ref=e657] [cursor=pointer]:
+              - /url: /news/articles/cjwp432d0v5o
+              - generic [ref=e658]:
+                - generic [ref=e659]: "3"
+                - heading "US strikes Iranian fast boats as Iran attacks UAE oil facility" [level=2] [ref=e662]
+            - link "4 Second hantavirus case confirmed after three die in suspected cruise ship outbreak" [ref=e665] [cursor=pointer]:
+              - /url: /news/articles/cy0294829ndo
+              - generic [ref=e666]:
+                - generic [ref=e667]: "4"
+                - heading "Second hantavirus case confirmed after three die in suspected cruise ship outbreak" [level=2] [ref=e670]
+            - link "5 Modi's BJP conquers Bengal, one of India's toughest political frontiers" [ref=e673] [cursor=pointer]:
+              - /url: /news/articles/ce8pdvp5x5ro
+              - generic [ref=e674]:
+                - generic [ref=e675]: "5"
+                - heading "Modi's BJP conquers Bengal, one of India's toughest political frontiers" [level=2] [ref=e678]
+            - link "6 Explosion at China fireworks factory kills 26 people" [ref=e681] [cursor=pointer]:
+              - /url: /news/articles/c70vqwengxno
+              - generic [ref=e682]:
+                - generic [ref=e683]: "6"
+                - heading "Explosion at China fireworks factory kills 26 people" [level=2] [ref=e686]
+            - link "7 Two killed and many injured after car driven into crowd in German city of Leipzig" [ref=e689] [cursor=pointer]:
+              - /url: /news/articles/ckgpzgxgz58o
+              - generic [ref=e690]:
+                - generic [ref=e691]: "7"
+                - heading "Two killed and many injured after car driven into crowd in German city of Leipzig" [level=2] [ref=e694]
+            - link "8 Popular Australian author pleads guilty over child exploitation material" [ref=e697] [cursor=pointer]:
+              - /url: /news/articles/cg7pz2xj4l3o
+              - generic [ref=e698]:
+                - generic [ref=e699]: "8"
+                - heading "Popular Australian author pleads guilty over child exploitation material" [level=2] [ref=e702]
+            - link "9 Blake Lively and Justin Baldoni settle lawsuit over It Ends With Us film" [ref=e705] [cursor=pointer]:
+              - /url: /news/articles/c936q7np647o
+              - generic [ref=e706]:
+                - generic [ref=e707]: "9"
+                - heading "Blake Lively and Justin Baldoni settle lawsuit over It Ends With Us film" [level=2] [ref=e710]
+            - link "10 Rescuers among three dead after yacht sinks off Australian coast" [ref=e713] [cursor=pointer]:
+              - /url: /news/articles/cr5p36v5q79o
+              - generic [ref=e714]:
+                - generic [ref=e715]: "10"
+                - heading "Rescuers among three dead after yacht sinks off Australian coast" [level=2] [ref=e718]
+        - generic [ref=e719]:
+          - generic [ref=e723]:
+            - separator [ref=e725]
+            - heading "Sport" [level=2] [ref=e728]
+          - generic [ref=e730]:
+            - generic [ref=e733]:
+              - link "image unavailable Pep Guardiola" [ref=e737] [cursor=pointer]:
+                - /url: /sport/football/articles/cedpn81ep1do
+                - generic [ref=e738]:
+                  - img "image unavailable" [ref=e739]
+                  - img "Pep Guardiola" [ref=e740]
+              - link "A remarkable finale - but will 13 chaotic minutes cost Man City title? A chaotic 13-minute spell from Man City in the second half of a six-goal thriller at Everton could prove to be the visitors' undoing in the Premier League title race. 9 hrs ago Premier League" [ref=e744] [cursor=pointer]:
+                - /url: /sport/football/articles/cedpn81ep1do
+                - generic [ref=e745]:
+                  - heading "A remarkable finale - but will 13 chaotic minutes cost Man City title?" [level=2] [ref=e748]
+                  - paragraph [ref=e749]: A chaotic 13-minute spell from Man City in the second half of a six-goal thriller at Everton could prove to be the visitors' undoing in the Premier League title race.
+                  - generic [ref=e750]:
+                    - generic [ref=e751]: 9 hrs ago
+                    - generic: Premier League
+            - generic [ref=e754]:
+              - link "image unavailable Wu Yize with his parents The family sacrifices that helped Wu become world champion Wu Yize discusses the sacrifices made by his family on his journey to becoming China's second world snooker champion. 3 hrs ago Snooker" [ref=e758] [cursor=pointer]:
+                - /url: /sport/snooker/articles/cgrpwvlv149o
+                - generic [ref=e759]:
+                  - generic [ref=e762]:
+                    - img "image unavailable" [ref=e763]
+                    - img "Wu Yize with his parents" [ref=e764]
+                  - generic [ref=e765]:
+                    - heading "The family sacrifices that helped Wu become world champion" [level=2] [ref=e768]
+                    - paragraph [ref=e769]: Wu Yize discusses the sacrifices made by his family on his journey to becoming China's second world snooker champion.
+                    - generic [ref=e770]:
+                      - generic [ref=e771]: 3 hrs ago
+                      - generic: Snooker
+              - link "New ballot world record for 2027 London Marathon More than 1.3 million people have applied for next year's event which takes place on 25 April. 41 mins ago Athletics" [ref=e776] [cursor=pointer]:
+                - /url: /sport/athletics/articles/cd6p081y698o
+                - generic [ref=e778]:
+                  - heading "New ballot world record for 2027 London Marathon" [level=2] [ref=e781]
+                  - paragraph [ref=e782]: More than 1.3 million people have applied for next year's event which takes place on 25 April.
+                  - generic [ref=e783]:
+                    - generic [ref=e784]: 41 mins ago
+                    - generic: Athletics
+              - link "Robinson in contact with England as he eyes Test recall Bowler Ollie Robinson confirms he has been in contact with both England head coach Brendon McCullum and managing director Rob Key as he eyes a recall to the Test side. 11 hrs ago England" [ref=e789] [cursor=pointer]:
+                - /url: /sport/cricket/articles/cpqpld7wjdyo
+                - generic [ref=e791]:
+                  - heading "Robinson in contact with England as he eyes Test recall" [level=2] [ref=e794]
+                  - paragraph [ref=e795]: Bowler Ollie Robinson confirms he has been in contact with both England head coach Brendon McCullum and managing director Rob Key as he eyes a recall to the Test side.
+                  - generic [ref=e796]:
+                    - generic [ref=e797]: 11 hrs ago
+                    - generic: England
+            - link "image unavailable Derek McInnes 'Pure theatre puts Hearts on cusp of title fairytale' BBC Scotland chief sports writer Tom English sums up the chaos and cacophony of Hearts' win over Rangers at Tynecastle. 12 hrs ago Scottish Prem" [ref=e802] [cursor=pointer]:
+              - /url: /sport/football/articles/ckgpxd82203o
+              - generic [ref=e803]:
+                - generic [ref=e806]:
+                  - img "image unavailable" [ref=e807]
+                  - img "Derek McInnes" [ref=e808]
+                - generic [ref=e809]:
+                  - heading "'Pure theatre puts Hearts on cusp of title fairytale'" [level=2] [ref=e812]
+                  - paragraph [ref=e813]: BBC Scotland chief sports writer Tom English sums up the chaos and cacophony of Hearts' win over Rangers at Tynecastle.
+                  - generic [ref=e814]:
+                    - generic [ref=e815]: 12 hrs ago
+                    - generic: Scottish Prem
+            - 'link "image unavailable Erling Haaland LIVE Premier League title race: Is it over or will that point be vital for Man City? Reaction to Manchester City''s 3-3 draw away at Everton which leaves them five points behind Arsenal in the title race." [ref=e820] [cursor=pointer]':
+              - /url: https://www.bbc.com/sport/football/live/czj2dxw7x1mt
+              - generic [ref=e821]:
+                - generic [ref=e824]:
+                  - img "image unavailable" [ref=e825]
+                  - img "Erling Haaland" [ref=e826]
+                - generic [ref=e827]:
+                  - generic [ref=e829]:
+                    - generic [ref=e830]:
+                      - img [ref=e831]
+                      - generic [ref=e834]: LIVE
+                    - 'heading "Premier League title race: Is it over or will that point be vital for Man City?" [level=2] [ref=e835]'
+                  - paragraph [ref=e836]: Reaction to Manchester City's 3-3 draw away at Everton which leaves them five points behind Arsenal in the title race.
+            - link "image unavailable George Russell in the media pen after qualifying for the Miami Grand Prix What does Antonelli's improvement mean for Russell? F1 Q&A BBC Sport F1 correspondent Andrew Benson answers your latest questions after the Miami Grand Prix. 1 hr ago Formula 1" [ref=e841] [cursor=pointer]:
+              - /url: /sport/formula1/articles/c4g4z98xk1po
+              - generic [ref=e842]:
+                - generic [ref=e845]:
+                  - img "image unavailable" [ref=e846]
+                  - img "George Russell in the media pen after qualifying for the Miami Grand Prix" [ref=e847]
+                - generic [ref=e848]:
+                  - heading "What does Antonelli's improvement mean for Russell? F1 Q&A" [level=2] [ref=e851]
+                  - paragraph [ref=e852]: BBC Sport F1 correspondent Andrew Benson answers your latest questions after the Miami Grand Prix.
+                  - generic [ref=e853]:
+                    - generic [ref=e854]: 1 hr ago
+                    - generic: Formula 1
+    - separator [ref=e857]
+    - contentinfo [ref=e858]:
+      - link "British Broadcasting Corporation" [ref=e861] [cursor=pointer]:
+        - /url: /
+        - img "British Broadcasting Corporation" [ref=e862]
+      - navigation "Footer navigation" [ref=e865]:
+        - list [ref=e866]:
+          - listitem [ref=e867]:
+            - link "Home" [ref=e869] [cursor=pointer]:
+              - /url: https://www.bbc.com/
+          - listitem [ref=e870]:
+            - link "News" [ref=e872] [cursor=pointer]:
+              - /url: /news
+          - listitem [ref=e873]:
+            - link "Sport" [ref=e875] [cursor=pointer]:
+              - /url: /sport
+          - listitem [ref=e876]:
+            - link "Business" [ref=e878] [cursor=pointer]:
+              - /url: /business
+          - listitem [ref=e879]:
+            - link "Technology" [ref=e881] [cursor=pointer]:
+              - /url: /technology
+          - listitem [ref=e882]:
+            - link "Health" [ref=e884] [cursor=pointer]:
+              - /url: /health
+          - listitem [ref=e885]:
+            - link "Culture" [ref=e887] [cursor=pointer]:
+              - /url: /culture
+          - listitem [ref=e888]:
+            - link "Arts" [ref=e890] [cursor=pointer]:
+              - /url: /arts
+          - listitem [ref=e891]:
+            - link "Travel" [ref=e893] [cursor=pointer]:
+              - /url: /travel
+          - listitem [ref=e894]:
+            - link "Earth" [ref=e896] [cursor=pointer]:
+              - /url: /future-planet
+          - listitem [ref=e897]:
+            - link "Audio" [ref=e899] [cursor=pointer]:
+              - /url: /audio
+          - listitem [ref=e900]:
+            - link "Video" [ref=e902] [cursor=pointer]:
+              - /url: /video
+          - listitem [ref=e903]:
+            - link "Live" [ref=e905] [cursor=pointer]:
+              - /url: /live
+          - listitem [ref=e906]:
+            - link "Weather" [ref=e908] [cursor=pointer]:
+              - /url: https://www.bbc.com/weather
+          - listitem [ref=e909]:
+            - link "BBC Shop" [ref=e911] [cursor=pointer]:
+              - /url: https://shop.bbc.com/
+          - listitem [ref=e912]:
+            - link "BritBox" [ref=e914] [cursor=pointer]:
+              - /url: https://www.britbox.com/?utm_source=bbc.com&utm_medium=referral&utm_campaign=footer
+      - button "BBC in other languages" [ref=e917] [cursor=pointer]:
+        - text: BBC in other languages
+        - img [ref=e919]
+      - generic [ref=e921]:
+        - generic [ref=e922]: "Follow BBC on:"
+        - generic [ref=e923]:
+          - button "Follow BBC on x" [ref=e924]:
+            - img [ref=e925]
+          - button "Follow BBC on facebook" [ref=e927]:
+            - img [ref=e928]
+          - button "Follow BBC on instagram" [ref=e930]:
+            - img [ref=e931]
+          - button "Follow BBC on tiktok" [ref=e933]:
+            - img [ref=e934]
+          - button "Follow BBC on linkedin" [ref=e936]:
+            - img [ref=e937]
+          - button "Follow BBC on youtube" [ref=e939]:
+            - img [ref=e940]
+      - navigation [ref=e943]:
+        - list [ref=e944]:
+          - listitem [ref=e945]:
+            - link "Terms of Use" [ref=e947] [cursor=pointer]:
+              - /url: https://www.bbc.com/pages/terms-of-use
+          - listitem [ref=e948]:
+            - link "Subscription Terms" [ref=e950] [cursor=pointer]:
+              - /url: https://www.bbc.com/pages/subscription-terms
+          - listitem [ref=e951]:
+            - link "About the BBC" [ref=e953] [cursor=pointer]:
+              - /url: https://www.bbc.co.uk/aboutthebbc
+          - listitem [ref=e954]:
+            - link "Privacy Policy" [ref=e956] [cursor=pointer]:
+              - /url: https://www.bbc.com/pages/privacy-policy
+          - listitem [ref=e957]:
+            - link "Cookies" [ref=e959] [cursor=pointer]:
+              - /url: https://www.bbc.com/usingthebbc/cookies/
+          - listitem [ref=e960]:
+            - link "Accessibility Help" [ref=e962] [cursor=pointer]:
+              - /url: https://www.bbc.co.uk/accessibility/
+          - listitem [ref=e963]:
+            - link "Contact the BBC" [ref=e965] [cursor=pointer]:
+              - /url: https://www.bbc.co.uk/contact
+          - listitem [ref=e966]:
+            - link "Advertise with us" [ref=e968] [cursor=pointer]:
+              - /url: https://advertising.bbcstudios.com/
+          - listitem [ref=e969]:
+            - link "Do not share or sell my info" [ref=e971] [cursor=pointer]:
+              - /url: https://www.bbc.com/usingthebbc/cookies/how-can-i-change-my-bbc-cookie-settings/
+          - listitem [ref=e972]:
+            - link "BBC.com Help & FAQs" [ref=e974] [cursor=pointer]:
+              - /url: https://help.bbc.com/hc/
+          - listitem [ref=e975]:
+            - link "Content Index" [ref=e977] [cursor=pointer]:
+              - /url: https://www.bbc.com/pages/content-index
+          - listitem [ref=e978]:
+            - link "Set Preferred Source" [ref=e980] [cursor=pointer]:
+              - /url: https://www.bbc.com/future/article/20260128-how-to-make-google-put-trusted-sources-up-top-when-you-search
+      - generic [ref=e981]:
+        - paragraph [ref=e982]:
+          - text: Copyright 2026 BBC. All rights reserved. The BBC is not responsible for the content of external sites.
+          - link "Read about our approach to external linking." [ref=e983] [cursor=pointer]:
+            - /url: https://www.bbc.com/editorialguidelines/guidance/links-and-feeds
+        - paragraph [ref=e984]
+  - alert [ref=e985]
+```

@@ -1,0 +1,57 @@
+Page URL: https://admin.example.com/customers/4521/profile
+Page Title: Customer profile — Acme Admin
+
+```yaml
+- generic [ref=root]:
+  - heading "Customer profile" [level=1]
+  - section "Personal details":
+    - row:
+      - text: "Full name"
+      - text: "Jane Q. Customer"
+    - row:
+      - text: "Date of birth"
+      - text: "DOB: 1985-04-12"
+    - row:
+      - text: "Email"
+      - text: "jane.customer@example.com"
+    - row:
+      - text: "Phone"
+      - text: "+1 (555) 123-4567"
+  - section "Identity documents":
+    - row:
+      - text: "Passport number"
+      - text: "passport: A12345678"
+    - row:
+      - text: "NHS number"
+      - text: "NHS: 943 476 5919"
+    - row:
+      - text: "Tax File Number"
+      - text: "Tax File Number: 123 456 782"
+    - row:
+      - text: "Social Security Number"
+      - text: "SSN: 123-45-6789"
+  - section "Business":
+    - row:
+      - text: "Trading entity"
+      - text: "ABN: 51 824 753 556"
+    - row:
+      - text: "Company number"
+      - text: "ACN: 004 028 077"
+  - section "Payment":
+    - row:
+      - text: "Card on file"
+      - text: "Credit card: 4111 1111 1111 1111"
+    - row:
+      - text: "Bank account"
+      - text: "IBAN: GB82 WEST 1234 5698 7654 32"
+    - row:
+      - text: "Routing"
+      - text: "Routing: 021000021"
+  - section "Connection details":
+    - row:
+      - text: "Last login from IP address"
+      - text: "Server logged client connect from 192.168.1.42"
+    - row:
+      - text: "API request"
+      - text: "Authorization: Basic dXNlcjpwYXNzd29yZA=="
+```

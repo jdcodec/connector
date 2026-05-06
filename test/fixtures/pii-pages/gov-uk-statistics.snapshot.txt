@@ -1,0 +1,488 @@
+### Page
+- Page URL: https://www.gov.uk/search/research-and-statistics
+- Page Title: Research and statistics - GOV.UK
+### Snapshot
+```yaml
+- generic [active] [ref=e1]:
+  - region "Cookies on GOV.UK" [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5]:
+        - heading "Cookies on GOV.UK" [level=2] [ref=e6]
+        - generic [ref=e8]:
+          - paragraph [ref=e9]: We use some essential cookies to make this website work.
+          - paragraph [ref=e10]: We’d like to set additional cookies to understand how you use GOV.UK, remember your settings and improve government services.
+          - paragraph [ref=e11]: We also use cookies set by other sites to help us deliver content from their services.
+      - generic [ref=e12]:
+        - button "Accept additional cookies" [ref=e13] [cursor=pointer]
+        - button "Reject additional cookies" [ref=e14] [cursor=pointer]
+        - link "View cookies" [ref=e15] [cursor=pointer]:
+          - /url: /help/cookies
+  - link "Skip to main content" [ref=e16] [cursor=pointer]:
+    - /url: "#content"
+  - banner [ref=e17]:
+    - navigation "Navigation menu" [ref=e19]:
+      - link "Go to the GOV.UK homepage" [ref=e21] [cursor=pointer]:
+        - /url: /
+        - img "GOV.UK" [ref=e22]
+      - heading "Navigation menu" [level=2] [ref=e35]
+      - button "Show navigation menu" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: Menu
+      - button "Show search menu" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: Search GOV.UK
+        - img
+  - generic [ref=e42]:
+    - navigation "Breadcrumb" [ref=e47]:
+      - list [ref=e48]:
+        - listitem [ref=e49]:
+          - link "Home" [ref=e50] [cursor=pointer]:
+            - /url: /
+    - main [ref=e51]:
+      - generic [ref=e53]:
+        - heading "Research and statistics" [level=1] [ref=e57]
+        - generic [ref=e59]:
+          - generic [ref=e61]:
+            - search "Research and statistics" [ref=e62]:
+              - generic [ref=e63]:
+                - generic [ref=e64]:
+                  - text: Search
+                  - generic [ref=e65]: Research and statistics
+                - generic [ref=e66]:
+                  - searchbox "Search Research and statistics" [ref=e68]
+                  - button "Search" [ref=e70] [cursor=pointer]:
+                    - text: Search
+                    - img
+            - link "Skip to results" [ref=e71] [cursor=pointer]:
+              - /url: "#js-results"
+            - search "Search filters" [ref=e72]:
+              - generic [ref=e73]:
+                - heading "Filter" [level=2] [ref=e74]
+                - generic [ref=e75]:
+                  - group [ref=e78]:
+                    - generic [ref=e79]:
+                      - generic [ref=e80]:
+                        - radio "All research and statistics" [checked] [ref=e81] [cursor=pointer]
+                        - generic [ref=e82] [cursor=pointer]: All research and statistics
+                      - generic [ref=e83]:
+                        - radio "Statistics (published)" [ref=e84] [cursor=pointer]
+                        - generic [ref=e85] [cursor=pointer]: Statistics (published)
+                      - generic [ref=e86]:
+                        - radio "Statistics (upcoming)" [ref=e87] [cursor=pointer]
+                        - generic [ref=e88] [cursor=pointer]: Statistics (upcoming)
+                      - generic [ref=e89]:
+                        - radio "Statistics (cancelled)" [ref=e90] [cursor=pointer]
+                        - generic [ref=e91] [cursor=pointer]: Statistics (cancelled)
+                      - generic [ref=e92]:
+                        - radio "Research" [ref=e93] [cursor=pointer]
+                        - generic [ref=e94] [cursor=pointer]: Research
+                  - generic "Topic" [ref=e95]:
+                    - heading "Topic" [level=3] [ref=e96]:
+                      - generic [ref=e97]:
+                        - button "Topic" [ref=e98] [cursor=pointer]
+                        - img [ref=e99]
+                  - generic "Organisation" [ref=e101]:
+                    - heading "Organisation" [level=3] [ref=e102]:
+                      - generic [ref=e103]:
+                        - button "Organisation" [ref=e104] [cursor=pointer]
+                        - img [ref=e105]
+                  - generic "World location" [ref=e107]:
+                    - heading "World location" [level=3] [ref=e108]:
+                      - generic [ref=e109]:
+                        - button "World location" [ref=e110] [cursor=pointer]
+                        - img [ref=e111]
+                  - generic "Updated" [ref=e114]:
+                    - heading "Updated" [level=3] [ref=e115]:
+                      - generic [ref=e116]:
+                        - button "Updated" [ref=e117] [cursor=pointer]
+                        - img [ref=e118]
+          - region "Research and statistics search results" [ref=e120]:
+            - generic [ref=e121]:
+              - generic [ref=e122]:
+                - generic [ref=e124]:
+                  - heading "100,378 results" [level=2] [ref=e126]
+                  - link "Skip to results" [ref=e127] [cursor=pointer]:
+                    - /url: "#js-results"
+                - list [ref=e130]:
+                  - listitem [ref=e131]:
+                    - link "Get emails" [ref=e132] [cursor=pointer]:
+                      - /url: /search/research-and-statistics/email-signup?content_store_document_type=all_research_and_statistics
+                      - img [ref=e133]
+                      - text: Get emails
+                  - listitem [ref=e135]:
+                    - link "Subscribe to feed" [ref=e136] [cursor=pointer]:
+                      - /url: /search/research-and-statistics.atom?content_store_document_type=all_research_and_statistics
+                      - img [ref=e137]
+                      - text: Subscribe to feed
+              - generic [ref=e140]: 100,378 results that are All research and statistics, sorted by Updated (newest)
+            - generic [ref=e143]:
+              - generic [ref=e144]: Sort by
+              - combobox "Sort by" [ref=e145]:
+                - option "Most viewed"
+                - option "Relevance" [disabled]
+                - option "Updated (newest)" [selected]
+                - option "Updated (oldest)"
+            - list [ref=e148]:
+              - listitem [ref=e149]:
+                - link "Upcoming DWP research publications" [ref=e151] [cursor=pointer]:
+                  - /url: /government/publications/list-of-upcoming-research-publications
+                - paragraph [ref=e152]: This document provides details of upcoming Department for Work and Pensions (DWP) research publications.
+                - list [ref=e153]:
+                  - listitem [ref=e154]: "Document type: Research"
+                  - listitem [ref=e155]: "Organisation: Department for Work and Pensions"
+                  - listitem [ref=e156]:
+                    - text: "Updated:"
+                    - time [ref=e157]: 5 May 2026
+                - list [ref=e158]:
+                  - listitem [ref=e159]:
+                    - link "Upcoming DWP research publications" [ref=e160] [cursor=pointer]:
+                      - /url: /government/publications/list-of-upcoming-research-publications/list-of-upcoming-research-publications
+                    - paragraph [ref=e161]: Date of Publication Title/Subject Description May 2026 Young People and…
+              - listitem [ref=e162]:
+                - link "Health Protection Report volume 20 (2026)" [ref=e164] [cursor=pointer]:
+                  - /url: /government/publications/health-protection-report-volume-20-2026
+                - paragraph [ref=e165]: A national public health bulletin from the UK Health Security Agency (UKHSA).
+                - list [ref=e166]:
+                  - listitem [ref=e167]: "Document type: Research"
+                  - listitem [ref=e168]: "Organisation: UK Health Security Agency"
+                  - listitem [ref=e169]:
+                    - text: "Updated:"
+                    - time [ref=e170]: 1 May 2026
+                - list [ref=e171]:
+                  - listitem [ref=e172]:
+                    - 'link "HPR volume 20 issue 4: news (30 April 2026)" [ref=e173] [cursor=pointer]':
+                      - /url: /government/publications/health-protection-report-volume-20-2026/hpr-volume-20-issue-4-news-30-april-2026
+                    - paragraph [ref=e174]: Effectiveness of maternal RSV vaccine in England confirmed The maternal…
+                  - listitem [ref=e175]:
+                    - 'link "HPR volume 20 issue 3: news (24 and 27 March, and 2 April 2026)" [ref=e176] [cursor=pointer]':
+                      - /url: /government/publications/health-protection-report-volume-20-2026/hpr-volume-20-issue-3-news-24-march-2026
+                    - paragraph [ref=e177]: Outbreak of Legionnaires’ Disease, London The UK Health Security Agency…
+                  - listitem [ref=e178]:
+                    - 'link "HPR volume 20 issue 2: news (26 February and 5 March 2026)" [ref=e179] [cursor=pointer]':
+                      - /url: /government/publications/health-protection-report-volume-20-2026/hpr-volume-20-issue-2-news-26-february-2026
+                    - paragraph [ref=e180]: Outbreak of monophasic Salmonella Typhimurium in the UK, January 2026 On…
+                  - listitem [ref=e181]:
+                    - 'link "HPR volume 20 issue 1: news (29 January and 5 February 2026)" [ref=e182] [cursor=pointer]':
+                      - /url: /government/publications/health-protection-report-volume-20-2026/hpr-volume-20-issue-1-news-29-january-2026
+                    - paragraph [ref=e183]: Investigation of Infant Formula and Follow-On Formula recall due to…
+              - listitem [ref=e184]:
+                - link "Does government spending on education increase intergenerational education mobility? The case of free compulsory basic education in Ghana" [ref=e186] [cursor=pointer]:
+                  - /url: /research-for-development-outputs/does-government-spending-on-education-increase-intergenerational-education-mobility-the-case-of-free-compulsory-basic-education-in-ghana
+                - paragraph [ref=e187]: This paper examines whether Ghana’s education reforms have increased intergenerational education mobility.
+                - list [ref=e188]:
+                  - listitem [ref=e189]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e190]:
+                    - text: "Updated:"
+                    - time [ref=e191]: 1 May 2026
+              - listitem [ref=e192]:
+                - link "Treat remind repeat! A natural field experiment in a tax amnesty context" [ref=e194] [cursor=pointer]:
+                  - /url: /research-for-development-outputs/treat-remind-repeat-a-natural-field-experiment-in-a-tax-amnesty-context
+                - paragraph [ref=e195]: This study evaluates the impact of behavioural interventions on the uptake and payment of tax arrears through an amnesty program in Kenya.
+                - list [ref=e196]:
+                  - listitem [ref=e197]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e198]:
+                    - text: "Updated:"
+                    - time [ref=e199]: 1 May 2026
+              - listitem [ref=e200]:
+                - link "Information frictions and gender inequality in online labor markets" [ref=e202] [cursor=pointer]:
+                  - /url: /research-for-development-outputs/information-frictions-and-gender-inequality-in-online-labor-markets
+                - paragraph [ref=e203]: This study uses data spanning 2014 to 2020 with over 2 million applicant-job matches and 227,194 applicants.
+                - list [ref=e204]:
+                  - listitem [ref=e205]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e206]:
+                    - text: "Updated:"
+                    - time [ref=e207]: 1 May 2026
+              - listitem [ref=e208]:
+                - link "Work and motherhood - female employment does not reduce fertility" [ref=e210] [cursor=pointer]:
+                  - /url: /research-for-development-outputs/work-and-motherhood-female-employment-does-not-reduce-fertility
+                - paragraph [ref=e211]: Summarises findings from a long-term randomised controlled trial in Ethiopia.
+                - list [ref=e212]:
+                  - listitem [ref=e213]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e214]:
+                    - text: "Updated:"
+                    - time [ref=e215]: 1 May 2026
+              - listitem [ref=e216]:
+                - link "Empowering adolescents, transforming futures - durable impacts that extend across generations" [ref=e218] [cursor=pointer]:
+                  - /url: /research-for-development-outputs/empowering-adolescents-transforming-futures-durable-impacts-that-extend-across-generations
+                - paragraph [ref=e219]: Child marriage is widespread in Bangladesh and other low-income areas, limiting girls' educational, economic, and future opportunities.
+                - list [ref=e220]:
+                  - listitem [ref=e221]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e222]:
+                    - text: "Updated:"
+                    - time [ref=e223]: 1 May 2026
+              - listitem [ref=e224]:
+                - 'link "Young Lives two decades of findings and future research opportunities: education and skills" [ref=e226] [cursor=pointer]':
+                  - /url: /research-for-development-outputs/young-lives-two-decades-of-findings-and-future-research-opportunities-education-and-skills
+                - paragraph [ref=e227]: Report presents findings from over 20 years of research by Young Lives on schooling, cognitive skills, socio-emotional skills and the transition to higher education.
+                - list [ref=e228]:
+                  - listitem [ref=e229]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e230]:
+                    - text: "Updated:"
+                    - time [ref=e231]: 1 May 2026
+              - listitem [ref=e232]:
+                - 'link "Young Lives two decades of findings and future research opportunities: health and well-being" [ref=e234] [cursor=pointer]':
+                  - /url: /research-for-development-outputs/young-lives-two-decades-of-findings-and-future-research-opportunities-health-and-well-being
+                - paragraph [ref=e235]: Report presents key findings from over 20 years of quantitative and qualitative research by Young Lives on nutrition, health and well-being.
+                - list [ref=e236]:
+                  - listitem [ref=e237]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e238]:
+                    - text: "Updated:"
+                    - time [ref=e239]: 1 May 2026
+              - listitem [ref=e240]:
+                - 'link "Young Lives two decades of findings and future research opportunities: family lives" [ref=e242] [cursor=pointer]':
+                  - /url: /research-for-development-outputs/young-lives-two-decades-of-findings-and-future-research-opportunities-family-lives
+                - paragraph [ref=e243]: Report presents findings from over 20 years of Young Lives’ data and research on experiences of family lives.
+                - list [ref=e244]:
+                  - listitem [ref=e245]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e246]:
+                    - text: "Updated:"
+                    - time [ref=e247]: 1 May 2026
+              - listitem [ref=e248]:
+                - 'link "Pneumococcal disease: cases caused by serotypes not covered by PCV13" [ref=e250] [cursor=pointer]':
+                  - /url: /government/publications/pneumococcal-disease-cases-caused-by-serotypes-not-covered-by-pcv13
+                - paragraph [ref=e251]: Cumulative weekly data on invasive pneumococcal disease (IPD) infections due to serotypes not in Prevenar 13™ vaccine.
+                - list [ref=e252]:
+                  - listitem [ref=e253]: "Document type: Research"
+                  - listitem [ref=e254]: "Part of a collection: Pneumococcal disease: guidance, data and analysis"
+                  - listitem [ref=e255]: "Organisation: UK Health Security Agency"
+                  - listitem [ref=e256]:
+                    - text: "Updated:"
+                    - time [ref=e257]: 1 May 2026
+              - listitem [ref=e258]:
+                - 'link "Pneumococcal disease: cases caused by serotypes covered by PCV13" [ref=e260] [cursor=pointer]':
+                  - /url: /government/publications/pneumococcal-disease-cases-caused-by-serotypes-covered-by-pcv13
+                - paragraph [ref=e261]: Cumulative weekly data on invasive pneumococcal disease (IPD) infections due to serotypes in Prevenar 13™ in England.
+                - list [ref=e262]:
+                  - listitem [ref=e263]: "Document type: Research"
+                  - listitem [ref=e264]: "Part of a collection: Pneumococcal disease: guidance, data and analysis"
+                  - listitem [ref=e265]: "Organisation: UK Health Security Agency"
+                  - listitem [ref=e266]:
+                    - text: "Updated:"
+                    - time [ref=e267]: 1 May 2026
+              - listitem [ref=e268]:
+                - 'link "Young Lives two decades of findings and future research opportunities: employment" [ref=e270] [cursor=pointer]':
+                  - /url: /research-for-development-outputs/young-lives-two-decades-of-findings-and-future-research-opportunities-employment
+                - paragraph [ref=e271]: Report presents findings from over 20 years of Young Lives’ data and research on employment.
+                - list [ref=e272]:
+                  - listitem [ref=e273]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e274]:
+                    - text: "Updated:"
+                    - time [ref=e275]: 1 May 2026
+              - listitem [ref=e276]:
+                - link "Bovine TB epidemiology and surveillance in Great Britain, 2024" [ref=e278] [cursor=pointer]:
+                  - /url: /government/publications/bovine-tb-epidemiology-and-surveillance-in-great-britain-2024
+                - paragraph [ref=e279]: Analysis of the results of bovine tuberculosis epidemiology and surveillance in England and Great Britain in 2024.
+                - list [ref=e280]:
+                  - listitem [ref=e281]: "Document type: Research"
+                  - listitem [ref=e282]: "Part of a collection: Bovine TB epidemiology and surveillance in Great Britain"
+                  - listitem [ref=e283]: "Organisation: Animal and Plant Health Agency"
+                  - listitem [ref=e284]:
+                    - text: "Updated:"
+                    - time [ref=e285]: 1 May 2026
+              - listitem [ref=e286]:
+                - link "Lumpy skin disease in Europe" [ref=e288] [cursor=pointer]:
+                  - /url: /government/publications/lumpy-skin-disease-in-europe
+                - paragraph [ref=e289]: Preliminary and updated outbreak assessments for lumpy skin disease in Europe.
+                - list [ref=e290]:
+                  - listitem [ref=e291]: "Document type: Research"
+                  - listitem [ref=e292]: "Part of a collection: Animal diseases: international and UK monitoring"
+                  - listitem [ref=e293]: "Organisation: Department for Environment, Food & Rural Affairs"
+                  - listitem [ref=e294]:
+                    - text: "Updated:"
+                    - time [ref=e295]: 1 May 2026
+              - listitem [ref=e296]:
+                - 'link "When choice matters: the asymmetric effects of precommitment implementation on healthy food choice" [ref=e298] [cursor=pointer]':
+                  - /url: /research-for-development-outputs/when-choice-matters-the-asymmetric-effects-of-precommitment-implementation-on-healthy-food-choice
+                - paragraph [ref=e299]: Investigates the role of precommitment in making healthy food choices using a field experiment embedded in the Young Lives study in Peru.
+                - list [ref=e300]:
+                  - listitem [ref=e301]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e302]:
+                    - text: "Updated:"
+                    - time [ref=e303]: 1 May 2026
+              - listitem [ref=e304]:
+                - 'link "Love thy neighbour? Violent armed conflict and trust: evidence from Ethiopia" [ref=e306] [cursor=pointer]':
+                  - /url: /research-for-development-outputs/love-thy-neighbour-violent-armed-conflict-and-trust-evidence-from-ethiopia
+                - paragraph [ref=e307]: Investigates the effects of exposure to violent conflict on trust among young adults.
+                - list [ref=e308]:
+                  - listitem [ref=e309]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e310]:
+                    - text: "Updated:"
+                    - time [ref=e311]: 1 May 2026
+              - listitem [ref=e312]:
+                - 'link "Adolescents’ relationships with their parents and peers as mediators between economic circumstances and emotional symptoms: a multicountry longitudinal analysis" [ref=e314] [cursor=pointer]':
+                  - /url: /research-for-development-outputs/adolescents-relationships-with-their-parents-and-peers-as-mediators-between-economic-circumstances-and-emotional-symptoms-a-multicountry-longitudinal-analysis
+                - paragraph [ref=e315]: Analyses longitudinal data of adolescents from a Young Lives study.
+                - list [ref=e316]:
+                  - listitem [ref=e317]: "Organisation: Foreign, Commonwealth & Development Office"
+                  - listitem [ref=e318]:
+                    - text: "Updated:"
+                    - time [ref=e319]: 1 May 2026
+              - listitem [ref=e320]:
+                - link "Local reference rents, listed by BRMA and property size (April 2026)" [ref=e322] [cursor=pointer]:
+                  - /url: /government/publications/local-reference-rents-listed-by-brma-and-property-size-april-2026
+                - paragraph [ref=e323]: Broad rental market areas (BRMA) and property size (April 2026) Local reference rent (LRR) levels in BRMA, residential property in England, by number of rooms.
+                - list [ref=e324]:
+                  - listitem [ref=e325]: "Document type: Research"
+                  - listitem [ref=e326]: "Part of a collection: Local reference rent levels"
+                  - listitem [ref=e327]: "Organisation: HM Revenue & Customs"
+                  - listitem [ref=e328]:
+                    - text: "Updated:"
+                    - time [ref=e329]: 1 May 2026
+              - listitem [ref=e330]:
+                - link "Vessel lists over 10 metres" [ref=e332] [cursor=pointer]:
+                  - /url: /government/statistical-data-sets/vessel-lists-over-10-metres
+                - paragraph [ref=e333]: Registered and licensed vessels over 10 metres
+                - list [ref=e334]:
+                  - listitem [ref=e335]: "Part of a collection: UK fishing vessel lists"
+                  - listitem [ref=e336]: "Organisation: Marine Management Organisation"
+                  - listitem [ref=e337]:
+                    - text: "Updated:"
+                    - time [ref=e338]: 1 May 2026
+            - navigation "Pagination" [ref=e340]:
+              - 'link "Next page : 2 of 5,019" [ref=e342] [cursor=pointer]':
+                - /url: /search/research-and-statistics?page=2
+                - img [ref=e343]
+                - text: Next page
+                - generic [ref=e345]: ":"
+                - generic [ref=e346]: 2 of 5,019
+            - list [ref=e349]:
+              - listitem [ref=e350]:
+                - link "Get emails" [ref=e351] [cursor=pointer]:
+                  - /url: /search/research-and-statistics/email-signup?content_store_document_type=all_research_and_statistics
+                  - img [ref=e352]
+                  - text: Get emails
+              - listitem [ref=e354]:
+                - link "Subscribe to feed" [ref=e355] [cursor=pointer]:
+                  - /url: /search/research-and-statistics.atom?content_store_document_type=all_research_and_statistics
+                  - img [ref=e356]
+                  - text: Subscribe to feed
+  - generic [ref=e361]:
+    - generic [ref=e363]:
+      - heading "Is this page useful?" [level=2] [ref=e364]
+      - list [ref=e365]:
+        - listitem [ref=e366]:
+          - button "Yes this page is useful" [ref=e367] [cursor=pointer]:
+            - text: "Yes"
+            - generic [ref=e368]: this page is useful
+        - listitem [ref=e369]:
+          - button "No this page is not useful" [ref=e370] [cursor=pointer]:
+            - text: "No"
+            - generic [ref=e371]: this page is not useful
+    - button "Report a problem with this page" [ref=e373] [cursor=pointer]
+  - contentinfo [ref=e374]:
+    - generic [ref=e375]:
+      - generic [ref=e386]:
+        - generic [ref=e387]:
+          - heading "Services and information" [level=2] [ref=e388]
+          - list [ref=e389]:
+            - listitem [ref=e390]:
+              - link "Benefits" [ref=e391] [cursor=pointer]:
+                - /url: /browse/benefits
+            - listitem [ref=e392]:
+              - link "Births, death, marriages and care" [ref=e393] [cursor=pointer]:
+                - /url: /browse/births-deaths-marriages
+            - listitem [ref=e394]:
+              - link "Business and self-employed" [ref=e395] [cursor=pointer]:
+                - /url: /browse/business
+            - listitem [ref=e396]:
+              - link "Childcare and parenting" [ref=e397] [cursor=pointer]:
+                - /url: /browse/childcare-parenting
+            - listitem [ref=e398]:
+              - link "Citizenship and living in the UK" [ref=e399] [cursor=pointer]:
+                - /url: /browse/citizenship
+            - listitem [ref=e400]:
+              - link "Crime, justice and the law" [ref=e401] [cursor=pointer]:
+                - /url: /browse/justice
+            - listitem [ref=e402]:
+              - link "Disabled people" [ref=e403] [cursor=pointer]:
+                - /url: /browse/disabilities
+            - listitem [ref=e404]:
+              - link "Driving and transport" [ref=e405] [cursor=pointer]:
+                - /url: /browse/driving
+            - listitem [ref=e406]:
+              - link "Education and learning" [ref=e407] [cursor=pointer]:
+                - /url: /browse/education
+            - listitem [ref=e408]:
+              - link "Employing people" [ref=e409] [cursor=pointer]:
+                - /url: /browse/employing-people
+            - listitem [ref=e410]:
+              - link "Environment and countryside" [ref=e411] [cursor=pointer]:
+                - /url: /browse/environment-countryside
+            - listitem [ref=e412]:
+              - link "Housing and local services" [ref=e413] [cursor=pointer]:
+                - /url: /browse/housing-local-services
+            - listitem [ref=e414]:
+              - link "Money and tax" [ref=e415] [cursor=pointer]:
+                - /url: /browse/tax
+            - listitem [ref=e416]:
+              - link "Passports, travel and living abroad" [ref=e417] [cursor=pointer]:
+                - /url: /browse/abroad
+            - listitem [ref=e418]:
+              - link "Visas and immigration" [ref=e419] [cursor=pointer]:
+                - /url: /browse/visas-immigration
+            - listitem [ref=e420]:
+              - link "Working, jobs and pensions" [ref=e421] [cursor=pointer]:
+                - /url: /browse/working
+        - generic [ref=e422]:
+          - heading "Government activity" [level=2] [ref=e423]
+          - list [ref=e424]:
+            - listitem [ref=e425]:
+              - link "Departments" [ref=e426] [cursor=pointer]:
+                - /url: /government/organisations
+            - listitem [ref=e427]:
+              - link "News" [ref=e428] [cursor=pointer]:
+                - /url: /search/news-and-communications
+            - listitem [ref=e429]:
+              - link "Guidance and regulation" [ref=e430] [cursor=pointer]:
+                - /url: /search/guidance-and-regulation
+            - listitem [ref=e431]:
+              - link "Research and statistics" [ref=e432] [cursor=pointer]:
+                - /url: /search/research-and-statistics
+            - listitem [ref=e433]:
+              - link "Policy papers and consultations" [ref=e434] [cursor=pointer]:
+                - /url: /search/policy-papers-and-consultations
+            - listitem [ref=e435]:
+              - link "Transparency" [ref=e436] [cursor=pointer]:
+                - /url: /search/transparency-and-freedom-of-information-releases
+            - listitem [ref=e437]:
+              - link "How government works" [ref=e438] [cursor=pointer]:
+                - /url: /government/how-government-works
+            - listitem [ref=e439]:
+              - link "Get involved" [ref=e440] [cursor=pointer]:
+                - /url: /government/get-involved
+      - separator [ref=e441]
+      - generic [ref=e442]:
+        - generic [ref=e443]:
+          - heading "Support links" [level=2] [ref=e444]
+          - list [ref=e445]:
+            - listitem [ref=e446]:
+              - link "Help" [ref=e447] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e448]:
+              - link "Privacy" [ref=e449] [cursor=pointer]:
+                - /url: /help/privacy-notice
+            - listitem [ref=e450]:
+              - link "Cookies" [ref=e451] [cursor=pointer]:
+                - /url: /help/cookies
+            - listitem [ref=e452]:
+              - link "Accessibility statement" [ref=e453] [cursor=pointer]:
+                - /url: /help/accessibility-statement
+            - listitem [ref=e454]:
+              - link "Contact" [ref=e455] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=e456]:
+              - link "Terms and conditions" [ref=e457] [cursor=pointer]:
+                - /url: /help/terms-conditions
+            - listitem [ref=e458]:
+              - link "Rhestr o Wasanaethau Cymraeg" [ref=e459] [cursor=pointer]:
+                - /url: /cymraeg
+            - listitem [ref=e460]:
+              - link "Government Digital Service" [ref=e461] [cursor=pointer]:
+                - /url: /government/organisations/government-digital-service
+          - img [ref=e462]
+          - generic [ref=e464]:
+            - text: All content is available under the
+            - link "Open Government Licence v3.0" [ref=e465] [cursor=pointer]:
+              - /url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+            - text: ", except where otherwise stated"
+        - link "© Crown copyright" [ref=e467] [cursor=pointer]:
+          - /url: https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/
+```

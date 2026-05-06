@@ -57,20 +57,50 @@ const BOOSTER_KEYWORDS: Record<string, RegExp> = {
   ACN: /\b(?:acn|company\s*number)\b/i,
   MEDICARE: /\bmedicare\b/i,
   VAT: /\b(?:vat|tax\s*id)\b/i,
-  PASSPORT: /\bpassport\b/i,
+  // PASSPORT keywords. Real passport-bearing content reliably contains one
+  // of these within ±48 chars; URL hex fragments / ISO committee codes /
+  // git SHAs / hex colours do not. This is the cleanest discriminator.
+  PASSPORT: /\bpassport(?:\s*(?:no\.?|number|#))?\b|\bMRZ\b|\bnationality\b|\bplace\s*of\s*birth\b|\bdate\s*of\s*(?:issue|expiry)\b|\btravel\s*document\b|\bdocument\s*number\b/i,
   EMAIL: /\be[-\s]?mail\b/i,
   PHONE: /\b(?:phone|mobile|cell|tel)\b/i,
   DOB: /\b(?:dob|birth|birthday|born)\b/i,
   ADDRESS: /\b(?:address|postcode|postal|zip)\b/i,
+  // NETWORK booster gates IPV4. RFCs/specs use dotted-decimal as section
+  // refs ('§3.10.7.4') indistinguishable from real IPs by shape; only
+  // surrounding network vocabulary disambiguates. Uses an alpha-only
+  // boundary (negative-class around the keyword) instead of \b so 'ip'
+  // matches inside 'server_ip' / 'client_ip' attribute names — \b would
+  // miss those because '_' is a word char.
+  NETWORK: /(?:^|[^a-zA-Z])(?:ipv?[46]?|address|addr|host(?:name)?|inet|tcp|udp|dns|subnet|netmask|gateway|peer|listen|bind|connect(?:ion)?|socket|proxy|firewall|router|switch|server|client|src|dst)(?=[^a-zA-Z]|$)/i,
+  // AUTH booster gates BASIC_AUTH against plain English ('basic education',
+  // 'basic features' on a GitHub README). Real HTTP Basic auth headers
+  // appear after 'Authorization:' or 'Bearer' / 'credentials' tokens. Note
+  // 'basic auth' itself is included so the rule fires on documentation
+  // that says e.g. "Use basic auth: Basic dXNlcjpwYXNz" without a literal
+  // Authorization header.
+  AUTH: /\b(?:authorization|authentication|bearer|credentials?|http\s*auth|basic\s*auth)\b/i,
 };
 const BOOSTER_WINDOW = 48;
 const BOOSTER_PRIORITY_BUMP = 10;
 
-export function scanString(input: string, rs: CompiledRuleset): {
+export interface ScanSpan {
+  ruleName: string;
+  category: string;
+  start: number;
+  end: number;
+  value: string;
+}
+
+export function scanString(
+  input: string,
+  rs: CompiledRuleset,
+  options: { captureSpans?: boolean } = {},
+): {
   redacted: string;
   stats: RedactionStats;
+  spans?: ScanSpan[];
 } {
-  if (input === "") return { redacted: "", stats: {} };
+  if (input === "") return { redacted: "", stats: {}, ...(options.captureSpans ? { spans: [] } : {}) };
 
   const DEBUG = process.env.JDC_PRIVACY_PROFILE === "1";
   const t0 = DEBUG ? performance.now() : 0;
@@ -117,6 +147,22 @@ export function scanString(input: string, rs: CompiledRuleset): {
         continue;
       }
 
+      // Tier policy: low-confidence rules require at least one of their
+      // declared context boosters to match within the BOOSTER_WINDOW. This
+      // generalises the hardcoded context-gates above (ADDRESS,
+      // PHONE_FALLBACK, DOB) so any rule can be gated by tagging
+      // confidence: low + context_boosters in the ruleset JSON. Rules with
+      // confidence: low and zero context boosters retain shape-only
+      // behaviour (shape match + optional validator) — opt those into the
+      // tier policy via a ruleset edit, not an engine change.
+      if (
+        rule.confidence === "low" &&
+        rule.contextBoosters.length > 0 &&
+        !hasAnyBoosterContext(rule.contextBoosters, input, start, end)
+      ) {
+        continue;
+      }
+
       if (rule.confidence === "low" && rule.validator) {
         if (!runValidator(rule.validator, value)) continue;
       }
@@ -156,6 +202,7 @@ export function scanString(input: string, rs: CompiledRuleset): {
   const t3 = DEBUG ? performance.now() : 0;
 
   const stats: RedactionStats = {};
+  const spans: ScanSpan[] | undefined = options.captureSpans ? [] : undefined;
   let out = "";
   let cursor = 0;
   for (const c of accepted) {
@@ -163,6 +210,15 @@ export function scanString(input: string, rs: CompiledRuleset): {
     out += input.slice(cursor, c.start);
     out += c.token;
     stats[c.category] = (stats[c.category] ?? 0) + 1;
+    if (spans) {
+      spans.push({
+        ruleName: rs.rules[c.ruleIndex].name,
+        category: c.category,
+        start: c.start,
+        end: c.end,
+        value: input.slice(c.start, c.end),
+      });
+    }
     cursor = c.end;
   }
   out += input.slice(cursor);
@@ -173,7 +229,7 @@ export function scanString(input: string, rs: CompiledRuleset): {
       `[privacy] suppressors ${(t1 - t0).toFixed(1)}ms, rules+cands ${(t2 - t1).toFixed(1)}ms (${candidates.length}), overlap ${(t3 - t2).toFixed(1)}ms, build ${(t4 - t3).toFixed(1)}ms`,
     );
   }
-  return { redacted: out, stats };
+  return { redacted: out, stats, ...(spans ? { spans } : {}) };
 }
 
 function collectSuppressorRanges(input: string, rs: CompiledRuleset): Range[] {
@@ -242,6 +298,34 @@ function isSafeListed(
     return /\b(?:test|sample|demo|example|sandbox)\b/.test(window);
   }
 
+  return false;
+}
+
+/**
+ * Returns true if any of the rule's declared context-booster regexes matches
+ * within ±BOOSTER_WINDOW chars of [start, end]. Used as the prerequisite gate
+ * for confidence: low rules under the tier policy. Mirrors the window sizing
+ * and lookup pattern already used by computeContextBoost so the policy gate
+ * and the priority bump see the same context window.
+ */
+function hasAnyBoosterContext(
+  boosterKeys: string[],
+  input: string,
+  start: number,
+  end: number,
+): boolean {
+  if (boosterKeys.length === 0) return false;
+  const windowStart = Math.max(0, start - BOOSTER_WINDOW);
+  const windowEnd = Math.min(input.length, end + BOOSTER_WINDOW);
+  const window = input.slice(windowStart, windowEnd);
+  for (const key of boosterKeys) {
+    const re = BOOSTER_KEYWORDS[key];
+    if (re && re.test(window)) {
+      re.lastIndex = 0;
+      return true;
+    }
+    if (re) re.lastIndex = 0;
+  }
   return false;
 }
 

@@ -1,9 +1,31 @@
 {
-  "ruleset_version": "2.2.0",
+  "ruleset_version": "2.3.0",
   "ruleset_id": "jdc-privacy-shield",
   "generated_for": "packages/jdcodec-connector",
   "notes": "JS RegExp only. ReDoS-safe. Production-grade PII ruleset v2. See pii-test-corpus.json for acceptance vectors.",
   "changelog": {
+    "2.3.0": {
+      "date": "2026-05-05",
+      "summary": "Tier-policy enforcement. The pre-fix engine carried high/medium/low confidence labels but the labels were operationally meaningless — every rule fired on shape alone. A 7-page real-world survey (HN, Wikipedia, GitHub, BBC, RFC 9293, gov.uk, MDN) produced 782 redactions of which >99% were false positives on technical content. This bump codifies the tier policy: high = self-disambiguating shape, medium = shape + checksum, low = shape + required context cue within ±48 chars. The engine now requires a matching context_booster within window for any rule tagged confidence: low. Rules retagged: NHS_UK (medium→low), TFN_AU_9 (high→low), ABN_AU (high→low), IBAN_GENERIC (high→low + IBAN booster), IPV4 (high→low + new NETWORK booster), CC_GENERIC_16 (added CC booster). BASIC_AUTH regex tightened independently — pre-fix matched plain English phrases ('basic education', 'basic features') because the body class allowed pure alpha runs.",
+      "added": [
+        "NETWORK booster keyword (engine.ts) — gates IPV4 against RFC section refs / version numbers. Words: ip / ipv4 / ipv6 / addr / address / host / hostname / inet / tcp / udp / dns / subnet / netmask / gateway / peer / listen / bind / connect / socket / proxy / firewall / router / switch / src / dst.",
+        "AUTH booster keyword (engine.ts) — reserved for future auth-header rules; currently unused since BASIC_AUTH carries its own structural prefix.",
+        "PASSPORT booster expanded — adds MRZ, nationality, place of birth, date of issue, date of expiry, travel document, document number.",
+        "Engine gate: rules with confidence: low + non-empty context_boosters require a booster match within ±48 chars to fire. Rules with confidence: low and zero context_boosters retain their pre-policy behaviour (shape match + optional validator) — adopt those onto the tier policy via a ruleset edit, not an engine change."
+      ],
+      "changed": [
+        "NHS_UK confidence: medium → low. Booster: NHS.",
+        "TFN_AU_9 confidence: high → low. Booster: TFN.",
+        "ABN_AU confidence: high → low. Booster: ABN.",
+        "IBAN_GENERIC confidence: high → low. Added booster: IBAN.",
+        "IPV4 confidence: high → low. Added booster: NETWORK.",
+        "CC_GENERIC_16: added booster CC (was already low; engine now enforces).",
+        "BASIC_AUTH confidence: high → low. Added booster: AUTH. Body regex unchanged — base64('user:pass') is all-alpha (12 chars, no padding) so a body-shape tightening would either still admit English-phrase FPs or reject real short auth strings. Context gating ('Authorization:' / 'Bearer' / 'credentials' nearby) is the correct disambiguation.",
+        "ROUTING_US_ABA confidence: high → low (already had IBAN context_booster, engine now enforces). Pre-fix it fired on bare 9-digit shapes that pass the ABA mod-10 (matches the routing-number digit prefix range 01-32, 61-72, 80). Same shape-only collision class as the other tax/identity rules.",
+        "ACN_AU confidence: high → low (already had ACN context_booster). Bare-shape 9-digit collision with TFN/SIN/ABA was firing on test data even when the ACN checksum failed (high-conf rules ran the validator only as a +3 priority boost, not a gate). ACN_IN_ATTR retains high-conf because its lookbehind requires value=/data-tax=/data-customer= attribute prefix as a structural disambiguator."
+      ],
+      "validation": "7-fixture survey expected to drop from 782 redactions (>99% FP) to <50 redactions (mostly legitimate emails + bare-context positives). Synthetic positive-regression fixture (admin-page DOM with PII in human-language context) confirms no coverage loss on realistic positive cases."
+    },
     "2.2.0": {
       "date": "2026-04-24",
       "summary": "Adds ACN (Australian Company Number) coverage and extends DOB to cover ISO date form, spelled-out month form, and 'born YYYY' pattern. DOB_ISO + DOB_LONG are engine-context-gated on DOB keywords to avoid over-redacting ordinary dates; DOB_SLASH is unchanged to preserve v2.0 corpus behaviour. Names (personal / company) remain out of scope by design — regex can't do NER reliably; commercial tools (Hotjar/Datadog/Sentry) don't attempt it either.",
@@ -353,12 +375,13 @@
       "flags": "g",
       "replacement_token": "CC",
       "validator": "luhn",
+      "context_boosters": ["CC"],
       "anti_patterns": [
         "suppress_if_preceded_by",
         "suppress_if_ref_attribute",
         "suppress_if_timestamp"
       ],
-      "notes": "Generic fallback, requires Luhn validation"
+      "notes": "Generic fallback. confidence: low + CC booster required: archive.org timestamps yyyymmddhhmmss pass Luhn coincidentally and were redacting on Wikipedia citations."
     },
     {
       "category": "Credit Card",
@@ -612,7 +635,7 @@
       "name": "TFN_AU_9",
       "region": "AU",
       "priority": 100,
-      "confidence": "high",
+      "confidence": "low",
       "regex": "\\b\\d{3}[\\s]?\\d{3}[\\s]?\\d{3}\\b",
       "flags": "g",
       "replacement_token": "TFN",
@@ -624,7 +647,7 @@
       "context_boosters": [
         "TFN"
       ],
-      "notes": "AU TFN 9-digit"
+      "notes": "AU TFN 9-digit. Demoted high→low: 9-digit shape collides with arbitrary numeric runs (BBC story IDs, archive.org URL fragments). TFN context booster required."
     },
     {
       "category": "Tax/Identity",
@@ -666,7 +689,7 @@
       "name": "ABN_AU",
       "region": "AU",
       "priority": 100,
-      "confidence": "high",
+      "confidence": "low",
       "regex": "\\b\\d{2}[\\s]?\\d{3}[\\s]?\\d{3}[\\s]?\\d{3}\\b",
       "flags": "g",
       "replacement_token": "ABN",
@@ -678,7 +701,7 @@
       "context_boosters": [
         "ABN"
       ],
-      "notes": "AU ABN 11-digit"
+      "notes": "AU ABN 11-digit. Demoted high→low: 11-digit shape collides with arbitrary numeric IDs in news/RFC content. ABN context booster required."
     },
     {
       "category": "Tax/Identity",
@@ -703,7 +726,7 @@
       "name": "NHS_UK",
       "region": "UK",
       "priority": 100,
-      "confidence": "medium",
+      "confidence": "low",
       "regex": "\\b\\d{3}[\\s]?\\d{3}[\\s]?\\d{4}\\b",
       "flags": "g",
       "replacement_token": "NHS",
@@ -714,7 +737,7 @@
       "context_boosters": [
         "NHS"
       ],
-      "notes": "UK NHS number"
+      "notes": "UK NHS number. Demoted medium→low: 10-digit shape matches HN comment IDs (1777xxxxxxx range, 30+ FPs) and BBC story refs. NHS context booster required."
     },
     {
       "category": "Tax/Identity",
@@ -755,7 +778,7 @@
       "name": "IBAN_GENERIC",
       "region": "INTL",
       "priority": 100,
-      "confidence": "high",
+      "confidence": "low",
       "regex": "\\b[A-Z]{2}\\d{2}(?:[\\s-]?[A-Z0-9]){11,30}\\b",
       "flags": "g",
       "replacement_token": "IBAN",
@@ -763,7 +786,10 @@
       "anti_patterns": [
         "suppress_if_ref_attribute"
       ],
-      "notes": "IBAN with mod-97 validation"
+      "context_boosters": [
+        "IBAN"
+      ],
+      "notes": "IBAN with mod-97 validation. Demoted high→low: mod-97 alone is insufficient — 'TC171 SC2 US WG8 PDF' (ISO/IEC committee notation on Wikipedia) matched the shape and validator. IBAN context booster required."
     },
     {
       "category": "Financial",
@@ -798,7 +824,7 @@
       "name": "ROUTING_US_ABA",
       "region": "US",
       "priority": 100,
-      "confidence": "high",
+      "confidence": "low",
       "regex": "\\b(?:0[1-9]|1[0-2]|2[1-9]|3[0-2]|6[1-9]|7[0-2]|80)\\d{7}\\b",
       "flags": "g",
       "replacement_token": "IP",
@@ -826,12 +852,15 @@
       "name": "BASIC_AUTH",
       "region": "GLOBAL",
       "priority": 100,
-      "confidence": "high",
+      "confidence": "low",
       "regex": "basic\\s+[A-Za-z0-9+/=]{8,512}",
       "flags": "gi",
       "replacement_token": "TOKEN",
       "anti_patterns": [],
-      "notes": "Basic auth credentials"
+      "context_boosters": [
+        "AUTH"
+      ],
+      "notes": "HTTP Basic auth credentials. Demoted high→low: pre-fix regex matched plain English phrases ('basic education', 'basic features' on GitHub README) because real base64-encoded user:pass values can be all-alpha (e.g. 'dXNlcjpwYXNz' = base64('user:pass')) — a body-tightening regex would either reject real auth strings or still admit the English-phrase FPs. Real auth strings appear after 'Authorization:' / 'Auth:' headers; context-required gating is the correct disambiguation."
     },
     {
       "category": "Auth/Secret",
@@ -922,14 +951,17 @@
       "name": "IPV4",
       "region": "GLOBAL",
       "priority": 100,
-      "confidence": "high",
+      "confidence": "low",
       "regex": "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b",
       "flags": "g",
       "replacement_token": "IP",
       "anti_patterns": [
         "suppress_if_ref_attribute"
       ],
-      "notes": "IPv4 address"
+      "context_boosters": [
+        "NETWORK"
+      ],
+      "notes": "IPv4 address. Demoted high→low: RFC section refs (3.10.7.4, 2.5.2.2) are numerically valid IPv4 — 683 FPs on RFC 9293 alone. NETWORK context booster (ip / addr / host / tcp / udp / dns / connect / ...) required to disambiguate from outline references and version strings."
     },
     {
       "category": "Network",
@@ -1283,7 +1315,7 @@
       "name": "ACN_AU",
       "region": "AU",
       "priority": 100,
-      "confidence": "high",
+      "confidence": "low",
       "regex": "\\b\\d{3}[\\s]?\\d{3}[\\s]?\\d{3}\\b",
       "flags": "g",
       "replacement_token": "ACN",
@@ -1295,7 +1327,7 @@
       "context_boosters": [
         "ACN"
       ],
-      "notes": "AU Company Number — 9 digits with ASIC weighted checksum (weights 8,7,6,5,4,3,2,1 on digits 1-8; complement mod 10 must equal digit 9). Shares shape with TFN_AU_9; engine validator boost + ACN-keyword context boost disambiguate. Added v2.2.0."
+      "notes": "AU Company Number — 9 digits with ASIC weighted checksum (weights 8,7,6,5,4,3,2,1 on digits 1-8; complement mod 10 must equal digit 9). Shares shape with TFN_AU_9. Demoted high→low (v2.3.0): high-conf shape-only fired on bare 9-digit numbers (test input '123456789' redacted as ACN). Validator gate now runs as prerequisite under the low tier; ACN context booster also required."
     },
     {
       "category": "Tax/Identity",

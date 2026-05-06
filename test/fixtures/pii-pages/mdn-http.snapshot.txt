@@ -1,0 +1,684 @@
+### Page
+- Page URL: https://developer.mozilla.org/en-US/docs/Web/HTTP
+- Page Title: HTTP: Hypertext Transfer Protocol | MDN
+- Console: 0 errors, 1 warnings
+### Snapshot
+```yaml
+- generic [active] [ref=e1]:
+  - list:
+    - listitem:
+      - link "Skip to main content" [ref=e2] [cursor=pointer]:
+        - /url: "#content"
+    - listitem:
+      - link "Skip to search" [ref=e3] [cursor=pointer]:
+        - /url: "#search"
+  - banner [ref=e7]:
+    - navigation [ref=e8]:
+      - link "MDN" [ref=e10] [cursor=pointer]:
+        - /url: /en-US/
+        - img "MDN" [ref=e11]
+      - generic [ref=e15]:
+        - navigation [ref=e17]:
+          - button "HTML" [ref=e20] [cursor=pointer]:
+            - generic [ref=e21]: HTML
+          - button "CSS" [ref=e24] [cursor=pointer]:
+            - generic [ref=e25]: CSS
+          - button "JavaScript" [ref=e28] [cursor=pointer]:
+            - generic [ref=e29]: JavaScript
+          - button "Web APIs" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: Web APIs
+          - button "All" [ref=e36] [cursor=pointer]:
+            - generic [ref=e37]: All
+          - generic [ref=e39]:
+            - button "Learn" [ref=e40] [cursor=pointer]:
+              - generic [ref=e41]: Learn
+            - text: (external)
+          - button "Tools" [ref=e44] [cursor=pointer]:
+            - generic [ref=e45]: Tools
+          - generic [ref=e47]:
+            - button "About" [ref=e48] [cursor=pointer]:
+              - generic [ref=e49]: About
+            - text: (external)
+          - link "Blog" [ref=e51] [cursor=pointer]:
+            - /url: /en-US/blog/
+        - button "Search the site" [ref=e54] [cursor=pointer]:
+          - img [ref=e55]
+    - generic [ref=e59]:
+      - list [ref=e60]:
+        - listitem [ref=e61]:
+          - link "Web" [ref=e62] [cursor=pointer]:
+            - /url: /en-US/docs/Web
+        - listitem [ref=e63]:
+          - link "HTTP" [ref=e64] [cursor=pointer]:
+            - /url: /en-US/docs/Web/HTTP
+      - button "Switch color theme" [ref=e68] [cursor=pointer]:
+        - generic [ref=e69]: Theme
+      - generic [ref=e72]:
+        - button "English (US)" [ref=e73] [cursor=pointer]:
+          - generic [ref=e74]: English (US)
+        - generic: Remember language
+  - generic [ref=e76]:
+    - main [ref=e77]:
+      - generic [ref=e78]:
+        - 'heading "HTTP: Hypertext Transfer Protocol" [level=1] [ref=e79]'
+        - generic [ref=e80]:
+          - paragraph [ref=e81]:
+            - strong [ref=e82]: HTTP
+            - text: is an
+            - link "application-layer (external)" [ref=e83] [cursor=pointer]:
+              - /url: https://en.wikipedia.org/wiki/Application_Layer
+            - text: protocol for transmitting hypermedia documents, such as HTML. It was designed for communication between web browsers and web servers, but it can also be used for other purposes, such as machine-to-machine communication, programmatic access to APIs, and more.
+          - paragraph [ref=e84]:
+            - text: HTTP follows a classical
+            - link "client-server model (external)" [ref=e85] [cursor=pointer]:
+              - /url: https://en.wikipedia.org/wiki/Client%E2%80%93server_model
+            - text: ", with a client opening a connection to make a request, then waiting until it receives a response from the server. HTTP is a"
+            - link "stateless protocol (external)" [ref=e86] [cursor=pointer]:
+              - /url: https://en.wikipedia.org/wiki/Stateless_protocol
+            - text: ", meaning that the server does not keep any session data between two requests, although the later addition of"
+            - link "cookies" [ref=e87] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Cookies
+            - text: adds state to some client-server interactions.
+      - complementary [ref=e88]:
+        - navigation [ref=e89]:
+          - heading "In this article" [level=2] [ref=e90]
+          - list [ref=e91]:
+            - listitem [ref=e92]:
+              - link "Guides" [ref=e93] [cursor=pointer]:
+                - /url: "#guides"
+            - listitem [ref=e94]:
+              - link "Tools & resources" [ref=e95] [cursor=pointer]:
+                - /url: "#tools_resources"
+            - listitem [ref=e96]:
+              - link "Reference" [ref=e97] [cursor=pointer]:
+                - /url: "#reference"
+      - generic [ref=e98]:
+        - region "Guides" [ref=e99]:
+          - heading "Guides" [level=2] [ref=e100]:
+            - link "Guides" [ref=e101] [cursor=pointer]:
+              - /url: "#guides"
+          - paragraph [ref=e102]: HTTP is an extensible protocol that relies on concepts like resources and Uniform Resource Identifiers (URIs), a basic message structure, and client-server communication model. On top of these concepts, numerous extensions have been developed over the years that add functionality and updated semantics, including additional HTTP methods and headers.
+          - paragraph [ref=e103]:
+            - text: The
+            - link "HTTP guides" [ref=e104] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides
+            - text: are listed in order from general overviews to specialized, use-case-driven topics. Beginners are encouraged to start with the foundational guides before exploring more focused articles.
+          - generic [ref=e105]:
+            - term [ref=e106]:
+              - link "Overview of HTTP" [ref=e107] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Overview
+            - definition [ref=e108]:
+              - paragraph [ref=e109]: The basic features of HTTP, what it can do, its intended use in web architecture, and its position in the protocol stack.
+            - term [ref=e110]:
+              - link "Evolution of HTTP" [ref=e111] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Evolution_of_HTTP
+            - definition [ref=e112]:
+              - paragraph [ref=e113]: HTTP was created in the early 1990s and has been extended several times. This article goes through its history and describes HTTP/0.9, HTTP/1.0, HTTP/1.1, through HTTP/2 and HTTP/3, as well as novelties introduced over the years.
+            - term [ref=e114]:
+              - link "A typical HTTP session" [ref=e115] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Session
+            - definition [ref=e116]:
+              - paragraph [ref=e117]: Describes the flow of an HTTP session, from establishing a connection, sending a request, to receiving a response.
+            - term [ref=e118]:
+              - link "HTTP messages" [ref=e119] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Messages
+            - definition [ref=e120]:
+              - paragraph [ref=e121]: HTTP messages transmitted as requests and responses have a defined structure. This article describes this general structure, its purpose, and the different types of messages.
+            - term [ref=e122]:
+              - link "MIME types" [ref=e123] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/MIME_types
+            - definition [ref=e124]:
+              - paragraph [ref=e125]:
+                - text: Since HTTP/1.0, different types of content can be transmitted. This article explains how this is accomplished using the
+                - link "Content-Type" [ref=e126] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Content-Type
+                  - code [ref=e127]: Content-Type
+                - text: header and the MIME standard. A shortlist of common types used by web developers can be found in
+                - link "Common MIME types" [ref=e128] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Guides/MIME_types/Common_types
+                - text: .
+            - term [ref=e129]:
+              - link "Compression in HTTP" [ref=e130] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Compression
+            - definition [ref=e131]:
+              - paragraph [ref=e132]: Browsers and servers compress their messages before sending them over the network to reduce the amount of data that needs to be transmitted, improving transfer speed and bandwidth utilization.
+            - term [ref=e133]:
+              - link "HTTP caching" [ref=e134] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Caching
+            - definition [ref=e135]:
+              - paragraph [ref=e136]: Caching is a highly important mechanism for delivering fast experiences on the Web and for efficient use of resources. This article describes different methods of caching and how to use HTTP headers to control them.
+            - term [ref=e137]:
+              - link "HTTP authentication" [ref=e138] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Authentication
+            - definition [ref=e139]:
+              - paragraph [ref=e140]: Authentication is a way to verify the identity of a client when making requests to a server. It ensures that only authorized users or systems can access certain resources.
+            - term [ref=e141]:
+              - link "Using HTTP cookies" [ref=e142] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Cookies
+            - definition [ref=e143]:
+              - paragraph [ref=e144]:
+                - text: Although HTTP is a stateless protocol, a server can send a
+                - link "Set-Cookie" [ref=e145] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
+                  - code [ref=e146]: Set-Cookie
+                - text: header with the response. The client then returns the cookie's value with every subsequent request to the server in the form of a
+                - link "Cookie" [ref=e147] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Cookie
+                  - code [ref=e148]: Cookie
+                - text: request header. This adds the ability to store and exchange a small amount of data which effectively adds state to some client-server interactions.
+            - term [ref=e149]:
+              - link "Redirections in HTTP" [ref=e150] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Redirections
+            - definition [ref=e151]:
+              - paragraph [ref=e152]: URL redirection, also known as URL forwarding, is a technique to give more than one URL address to a page, a form, a whole website, or a web application. HTTP has a special kind of response, called a HTTP redirect, for this operation.
+            - term [ref=e153]:
+              - link "HTTP conditional requests" [ref=e154] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Conditional_requests
+            - definition [ref=e155]:
+              - paragraph [ref=e156]:
+                - text: In conditional requests, the outcome of a request depends on the value of a validator in the request. This method is used heavily in
+                - link "caching" [ref=e157] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Guides/Caching
+                - text: and use cases such as resuming a download, preventing lost updates when modifying a document on the server, and more.
+            - term [ref=e158]:
+              - link "HTTP range requests" [ref=e159] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Range_requests
+            - definition [ref=e160]:
+              - paragraph [ref=e161]: A range request asks the server to send a specific part (or parts) of a resource back to a client instead of the full resource. Range requests are useful for cases when a client knows they need only part of a large file, or for cases where an application allows the user to pause and resume a download.
+            - term [ref=e162]:
+              - link "Content negotiation" [ref=e163] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Content_negotiation
+            - definition [ref=e164]:
+              - paragraph [ref=e165]:
+                - text: HTTP defines a set of message headers, starting with
+                - link "Accept" [ref=e166] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Accept
+                  - code [ref=e167]: Accept
+                - text: as a way for a browser to announce the format, language, or encoding it prefers. This article explains how this advertisement happens, how the server is expected to react, and how it chooses the most adequate response to a request.
+            - term [ref=e168]:
+              - link "Connection management in HTTP/1.x" [ref=e169] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Connection_management_in_HTTP_1.x
+            - definition [ref=e170]:
+              - paragraph [ref=e171]: HTTP/1.1 was the first version of HTTP to support persistent connections and pipelining. This article explains both concepts, including the pros and cons of each.
+            - term [ref=e172]:
+              - link "Protocol upgrade mechanism" [ref=e173] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Protocol_upgrade_mechanism
+            - definition [ref=e174]:
+              - paragraph [ref=e175]:
+                - text: HTTP/1.1 provides a mechanism to upgrade an already-established connection to a different protocol using the
+                - link "Upgrade" [ref=e176] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Upgrade
+                  - code [ref=e177]: Upgrade
+                - text: header. A client can upgrade a connection from HTTP/1.1 to HTTP/2, or an HTTP(S) connection to a
+                - link "WebSocket" [ref=e178] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/API/WebSocket
+                - text: (
+                - code [ref=e179]: ws
+                - text: /
+                - code [ref=e180]: wss
+                - text: ).
+            - term [ref=e181]:
+              - link "Proxy servers and tunneling" [ref=e182] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Proxy_servers_and_tunneling
+            - definition [ref=e183]:
+              - paragraph [ref=e184]: A proxy can be on the user's local computer, or anywhere between the user's computer and a destination server on the Internet. This page outlines some basics about proxies and introduces a few configuration options.
+            - term [ref=e185]:
+              - link "HTTP Client hints" [ref=e186] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Client_hints
+            - definition [ref=e187]:
+              - paragraph [ref=e188]: Client Hints are a set of response headers that a server can use to proactively request information from a client about the device, network, user, and user-agent-specific preferences. The server can then determine which resources to send, based on the information that the client chooses to provide.
+            - term [ref=e189]:
+              - link "Network Error Logging" [ref=e190] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Network_Error_Logging
+              - img "Experimental" [ref=e191]
+            - definition [ref=e192]:
+              - paragraph [ref=e193]:
+                - text: Network Error Logging is a mechanism that can be configured via the
+                - code [ref=e194]: NEL
+                - text: HTTP response header. This experimental header allows websites and applications to opt-in to receive reports about failed (or even successful) network fetches from supporting browsers.
+            - term [ref=e195]:
+              - link "Browser detection using the user agent" [ref=e196] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Browser_detection_using_the_user_agent
+            - definition [ref=e197]:
+              - paragraph [ref=e198]: It's very rarely a good idea to use user agent sniffing to detect a browser, but there are edge cases that require it. This document will guide you in doing this as correctly as possible when this is necessary, with an emphasis on considerations to make before embarking on this route.
+        - region "Security and privacy" [ref=e199]:
+          - heading "Security and privacy" [level=3] [ref=e200]:
+            - link "Security and privacy" [ref=e201] [cursor=pointer]:
+              - /url: "#security_and_privacy"
+          - generic [ref=e202]:
+            - term [ref=e203]:
+              - link "Permissions Policy" [ref=e204] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Permissions_Policy
+            - definition [ref=e205]:
+              - paragraph [ref=e206]: Permissions Policy provides mechanisms for web developers to explicitly declare what functionality can and cannot be used on a website. You define a set of "policies" that restrict what APIs the site's code can access or modify the browser's default behavior for certain features.
+            - term [ref=e207]:
+              - link "Cross-Origin Resource Sharing (CORS)" [ref=e208] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/CORS
+            - definition [ref=e209]:
+              - paragraph [ref=e210]:
+                - text: Cross-site HTTP requests are requests for resources from a different domain than that of the resource making the request. Web pages today very commonly load cross-site resources, for example, a page 'Domain A' (
+                - code [ref=e211]: http://domaina.example/
+                - text: ) requests an image on 'Domain B' (
+                - code [ref=e212]: http://domainb.foo/image.jpg
+                - text: ) via the
+                - code [ref=e213]: img
+                - text: element. CORS allows web developers to control how their site reacts to cross-site requests.
+            - term [ref=e214]:
+              - link "Content Security Policy (CSP)" [ref=e215] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/CSP
+            - definition [ref=e216]:
+              - paragraph [ref=e217]:
+                - text: CSP allows website administrators to use the
+                - link "Content-Security-Policy" [ref=e218] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy
+                  - code [ref=e219]: Content-Security-Policy
+                - text: response header to control which resources the client is allowed to load for a given page. The CSP guide describes the overall Content Security Policy mechanism which helps detect and mitigate certain types of attacks, including Cross-Site Scripting (XSS) and data injection attacks.
+            - term [ref=e220]:
+              - link "Cross-Origin Resource Policy (CORP)" [ref=e221] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Guides/Cross-Origin_Resource_Policy
+            - definition [ref=e222]:
+              - paragraph [ref=e223]:
+                - text: CORP lets websites and applications opt in to protection against specific requests from other origins (such as those issued with elements like
+                - code [ref=e224]: <script>
+                - text: and
+                - code [ref=e225]: <img>
+                - text: ), to mitigate speculative side-channel attacks.
+            - term [ref=e226]:
+              - link "Mozilla web security guidelines (external)" [ref=e227] [cursor=pointer]:
+                - /url: https://infosec.mozilla.org/guidelines/web_security
+            - definition [ref=e228]:
+              - paragraph [ref=e229]: A collection of tips to help operational teams with creating secure web applications.
+        - region "Related resources" [ref=e230]:
+          - heading "Related resources" [level=3] [ref=e231]:
+            - link "Related resources" [ref=e232] [cursor=pointer]:
+              - /url: "#related_resources"
+          - generic [ref=e233]:
+            - term [ref=e234]:
+              - link "URIs" [ref=e235] [cursor=pointer]:
+                - /url: /en-US/docs/Web/URI
+            - definition [ref=e236]:
+              - paragraph [ref=e237]: Uniform Resource Identifiers (URIs) are used to describe and locate resources on the web and are an essential component in HTTP requests.
+            - term [ref=e238]:
+              - link "Configuring servers for Ogg media" [ref=e239] [cursor=pointer]:
+                - /url: /en-US/docs/Web/Media/Guides/Formats/Configuring_servers_for_Ogg_media
+            - definition [ref=e240]:
+              - paragraph [ref=e241]: This guide covers a few server configuration changes that may be necessary for your web server to correctly serve Ogg media files. This information may also be useful if you encounter other media types your server isn't already configured to recognize.
+        - region "Tools & resources" [ref=e242]:
+          - heading "Tools & resources" [level=2] [ref=e243]:
+            - link "Tools & resources" [ref=e244] [cursor=pointer]:
+              - /url: "#tools_resources"
+          - paragraph [ref=e245]: Helpful tools and resources for understanding and debugging HTTP.
+          - generic [ref=e246]:
+            - term [ref=e247]:
+              - link "Firefox Developer Tools (external)" [ref=e248] [cursor=pointer]:
+                - /url: https://firefox-source-docs.mozilla.org/devtools-user/index.html
+            - definition [ref=e249]:
+              - paragraph [ref=e250]:
+                - link "Network monitor (external)" [ref=e251] [cursor=pointer]:
+                  - /url: https://firefox-source-docs.mozilla.org/devtools-user/network_monitor/index.html
+            - term [ref=e252]:
+              - link "HTTP Observatory" [ref=e253] [cursor=pointer]:
+                - /url: /en-US/observatory
+            - definition [ref=e254]:
+              - paragraph [ref=e255]: A project designed to help developers, system administrators, and security professionals configure their sites safely and securely.
+            - term [ref=e256]:
+              - link "RedBot (external)" [ref=e257] [cursor=pointer]:
+                - /url: https://redbot.org/
+            - definition [ref=e258]:
+              - paragraph [ref=e259]: Tools to check your cache-related headers.
+            - term [ref=e260]:
+              - link "nghttp2 (external)" [ref=e261] [cursor=pointer]:
+                - /url: https://github.com/nghttp2/nghttp2
+            - definition [ref=e262]:
+              - paragraph [ref=e263]: An HTTP/2 client, server and proxy implementation written in C with load test and benchmarking tools and an HPACK encoder and decoder.
+            - term [ref=e264]:
+              - link "curl (external)" [ref=e265] [cursor=pointer]:
+                - /url: https://github.com/curl/curl
+            - definition [ref=e266]:
+              - paragraph [ref=e267]: A command-line tool for transferring data specified with URL syntax. Supports HTTP, HTTPS, WS, WSS, among many other protocols.
+            - term [ref=e268]:
+              - link "How Browsers Work (2011) (external)" [ref=e269] [cursor=pointer]:
+                - /url: https://web.dev/articles/howbrowserswork
+            - definition [ref=e270]:
+              - paragraph [ref=e271]: A very comprehensive article on browser internals and request flow through HTTP protocol.
+        - region "Reference" [ref=e272]:
+          - heading "Reference" [level=2] [ref=e273]:
+            - link "Reference" [ref=e274] [cursor=pointer]:
+              - /url: "#reference"
+          - paragraph [ref=e275]:
+            - text: The
+            - link "HTTP reference" [ref=e276] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Reference
+            - text: documentation contains detailed information about headers, request methods, status responses, and lists relevant specifications and standards documents.
+          - generic [ref=e277]:
+            - term [ref=e278]:
+              - link "HTTP headers" [ref=e279] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Reference/Headers
+            - definition [ref=e280]:
+              - paragraph [ref=e281]: Message headers are used to send metadata about a resource or a HTTP message, and to describe the behavior of the client or the server.
+            - term [ref=e282]:
+              - link "HTTP request methods" [ref=e283] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Reference/Methods
+            - definition [ref=e284]:
+              - paragraph [ref=e285]:
+                - text: Request methods indicate the purpose of the request and what is expected if the request is successful. The most common methods are
+                - link "GET" [ref=e286] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Methods/GET
+                  - code [ref=e287]: GET
+                - text: and
+                - link "POST" [ref=e288] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Methods/POST
+                  - code [ref=e289]: POST
+                - text: for retrieving and sending data to servers, respectively, but there are other methods which serve different purposes.
+            - term [ref=e290]:
+              - link "HTTP response status codes" [ref=e291] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Reference/Status
+            - definition [ref=e292]:
+              - paragraph [ref=e293]: "Response status codes indicate the outcome of a specific HTTP request. Responses are grouped in five classes: informational, successful, redirections, client errors, and server errors."
+            - term [ref=e294]:
+              - link "HTTP resources and specifications" [ref=e295] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Reference/Resources_and_specifications
+            - definition [ref=e296]:
+              - paragraph [ref=e297]: This page lists relevant resources about HTTP since it was first specified in the early 1990s.
+          - paragraph [ref=e298]: "The following subsections are also notable:"
+          - generic [ref=e299]:
+            - term [ref=e300]:
+              - link "CSP directives" [ref=e301] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy#directives
+            - definition [ref=e302]:
+              - paragraph [ref=e303]:
+                - text: The
+                - link "Content-Security-Policy" [ref=e304] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy
+                  - code [ref=e305]: Content-Security-Policy
+                - text: (CSP) response header allows website administrators to specify which resources the user agent is allowed to load for a given page. This section lists directives that can be used in a CSP header, with individual documentation pages that describe how the directives work and how to use them.
+            - term [ref=e306]:
+              - link "Permissions-Policy directives" [ref=e307] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy#directives
+            - definition [ref=e308]:
+              - paragraph [ref=e309]:
+                - text: The
+                - link "Permissions-Policy" [ref=e310] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy
+                  - code [ref=e311]: Permissions-Policy
+                - text: response header provides a mechanism to allow or deny the use of browser features in a document or within any
+                - link "<iframe>" [ref=e312] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTML/Reference/Elements/iframe
+                  - code [ref=e313]: <iframe>
+                - text: element in the document. This section lists directives that can be used in a Permissions-Policy header, with individual documentation pages that describe how the directives work and how to use them.
+        - region "Help improve MDN" [ref=e314]:
+          - generic [ref=e315]:
+            - img [ref=e316]
+            - heading "Help improve MDN" [level=2] [ref=e323]
+            - group [ref=e325]:
+              - generic [ref=e326]: Was this page helpful to you?
+              - generic [ref=e327]:
+                - button "Yes" [ref=e329] [cursor=pointer]:
+                  - img [ref=e331]
+                  - generic [ref=e333]:
+                    - generic: "Yes"
+                - button "No" [ref=e335] [cursor=pointer]:
+                  - img [ref=e337]
+                  - generic [ref=e339]:
+                    - generic: "No"
+            - link "Learn how to contribute" [ref=e340] [cursor=pointer]:
+              - /url: /en-US/docs/MDN/Community/Getting_started
+            - paragraph [ref=e341]:
+              - text: This page was last modified on
+              - time [ref=e342]: Dec 22, 2025
+              - text: by
+              - link "MDN contributors" [ref=e343] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP/contributors.txt
+              - text: .
+            - generic [ref=e344]:
+              - link "View this page on GitHub (external)" [ref=e345] [cursor=pointer]:
+                - /url: https://github.com/mdn/content/blob/main/files/en-us/web/http/index.md?plain=1
+              - text: •
+              - link "Report a problem with this content (external)" [ref=e346] [cursor=pointer]:
+                - /url: https://github.com/mdn/content/issues/new?template=page-report.yml&mdn-url=https%3A%2F%2Fdeveloper.mozilla.org%2Fen-US%2Fdocs%2FWeb%2FHTTP&metadata=%3C%21--+Do+not+make+changes+below+this+line+--%3E%0A%3Cdetails%3E%0A%3Csummary%3EPage+report+details%3C%2Fsummary%3E%0A%0A*+Folder%3A+%60en-us%2Fweb%2Fhttp%60%0A*+MDN+URL%3A+https%3A%2F%2Fdeveloper.mozilla.org%2Fen-US%2Fdocs%2FWeb%2FHTTP%0A*+GitHub+URL%3A+https%3A%2F%2Fgithub.com%2Fmdn%2Fcontent%2Fblob%2Fmain%2Ffiles%2Fen-us%2Fweb%2Fhttp%2Findex.md%0A*+Last+commit%3A+https%3A%2F%2Fgithub.com%2Fmdn%2Fcontent%2Fcommit%2Fd1f3f179175c80c18b1b78ba0df0ea7d15ca32cc%0A*+Document+last+modified%3A+2025-12-22T01%3A06%3A28.000Z%0A%0A%3C%2Fdetails%3E
+    - complementary [ref=e347]:
+      - navigation [ref=e348]:
+        - generic [ref=e350]:
+          - generic [ref=e352]: Filter sidebar
+          - textbox "Filter sidebar" [ref=e353]:
+            - /placeholder: Filter
+        - list [ref=e355]:
+          - listitem [ref=e356]:
+            - emphasis [ref=e357]:
+              - link "HTTP" [ref=e358] [cursor=pointer]:
+                - /url: /en-US/docs/Web/HTTP
+          - listitem [ref=e359]:
+            - link "Guides" [ref=e360] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides
+          - listitem [ref=e361]:
+            - link "Overview of HTTP" [ref=e362] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Overview
+          - listitem [ref=e363]:
+            - link "Evolution of HTTP" [ref=e364] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Evolution_of_HTTP
+          - listitem [ref=e365]:
+            - link "A typical HTTP session" [ref=e366] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Session
+          - listitem [ref=e367]:
+            - link "HTTP messages" [ref=e368] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Messages
+          - listitem [ref=e369]:
+            - link "Media types" [ref=e370] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/MIME_types
+            - list [ref=e371]:
+              - listitem [ref=e372]:
+                - link "Common types" [ref=e373] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Guides/MIME_types/Common_types
+          - listitem [ref=e374]:
+            - link "Compression in HTTP" [ref=e375] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Compression
+          - listitem [ref=e376]:
+            - link "HTTP caching" [ref=e377] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Caching
+          - listitem [ref=e378]:
+            - link "HTTP authentication" [ref=e379] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Authentication
+          - listitem [ref=e380]:
+            - link "Using HTTP cookies" [ref=e381] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Cookies
+          - listitem [ref=e382]:
+            - link "Redirections in HTTP" [ref=e383] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Redirections
+          - listitem [ref=e384]:
+            - link "Conditional requests" [ref=e385] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Conditional_requests
+          - listitem [ref=e386]:
+            - link "Range requests" [ref=e387] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Range_requests
+          - listitem [ref=e388]:
+            - link "Client hints" [ref=e389] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Client_hints
+          - listitem [ref=e390]:
+            - link "User-Agent reduction" [ref=e391] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/User-agent_reduction
+          - listitem [ref=e392]:
+            - link "Compression Dictionary Transport Experimental" [ref=e393] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Compression_dictionary_transport
+              - text: Compression Dictionary Transport
+              - img "Experimental" [ref=e394]
+          - listitem [ref=e395]:
+            - link "Network Error Logging Experimental" [ref=e396] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Network_Error_Logging
+              - text: Network Error Logging
+              - img "Experimental" [ref=e397]
+          - listitem [ref=e398]:
+            - link "Content negotiation" [ref=e399] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Content_negotiation
+            - list [ref=e400]:
+              - listitem [ref=e401]:
+                - link "Default Accept values" [ref=e402] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Guides/Content_negotiation/List_of_default_Accept_values
+          - listitem [ref=e403]:
+            - link "Browser detection using the UA string" [ref=e404] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Browser_detection_using_the_user_agent
+          - listitem [ref=e405]:
+            - link "Connection management in HTTP/1.x" [ref=e406] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Connection_management_in_HTTP_1.x
+          - listitem [ref=e407]:
+            - link "Protocol upgrade mechanism" [ref=e408] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Protocol_upgrade_mechanism
+          - listitem [ref=e409]:
+            - link "Proxy servers and tunneling" [ref=e410] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Guides/Proxy_servers_and_tunneling
+            - list [ref=e411]:
+              - listitem [ref=e412]:
+                - link "Proxy Auto-Configuration (PAC) file" [ref=e413] [cursor=pointer]:
+                  - /url: /en-US/docs/Web/HTTP/Guides/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file
+          - listitem [ref=e414]:
+            - group [ref=e415]:
+              - generic "Security and privacy" [ref=e416] [cursor=pointer]:
+                - generic [ref=e417]: Security and privacy
+          - listitem [ref=e418]:
+            - link "Reference" [ref=e419] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Reference
+          - listitem [ref=e420]:
+            - group [ref=e421]:
+              - generic "HTTP headers" [ref=e422] [cursor=pointer]:
+                - link "HTTP headers" [ref=e423]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers
+          - listitem [ref=e424]:
+            - group [ref=e425]:
+              - generic "HTTP request methods" [ref=e426] [cursor=pointer]:
+                - link "HTTP request methods" [ref=e427]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Methods
+          - listitem [ref=e428]:
+            - group [ref=e429]:
+              - generic "HTTP response status codes" [ref=e430] [cursor=pointer]:
+                - link "HTTP response status codes" [ref=e431]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Status
+          - listitem [ref=e432]:
+            - group [ref=e433]:
+              - generic "CSP directives" [ref=e434] [cursor=pointer]:
+                - link "CSP directives" [ref=e435]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy#directives
+          - listitem [ref=e436]:
+            - group [ref=e437]:
+              - generic "Permissions-Policy directives Experimental" [ref=e438] [cursor=pointer]:
+                - link "Permissions-Policy directives Experimental" [ref=e439]:
+                  - /url: /en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy#directives
+                  - text: Permissions-Policy directives
+                  - img "Experimental" [ref=e440]
+          - listitem [ref=e441]:
+            - link "HTTP resources and specifications" [ref=e442] [cursor=pointer]:
+              - /url: /en-US/docs/Web/HTTP/Reference/Resources_and_specifications
+  - contentinfo [ref=e444]:
+    - generic [ref=e445]:
+      - generic [ref=e446]:
+        - link "MDN logo" [ref=e447] [cursor=pointer]:
+          - /url: /
+          - img "MDN" [ref=e448]
+        - paragraph [ref=e450]: Your blueprint for a better internet.
+      - list [ref=e451]:
+        - listitem [ref=e452]:
+          - link "MDN on GitHub" [ref=e453] [cursor=pointer]:
+            - /url: https://github.com/mdn/
+        - listitem [ref=e454]:
+          - link "MDN on Bluesky" [ref=e455] [cursor=pointer]:
+            - /url: https://bsky.app/profile/developer.mozilla.org
+        - listitem [ref=e456]:
+          - link "MDN on X" [ref=e457] [cursor=pointer]:
+            - /url: https://x.com/mozdevnet
+        - listitem [ref=e458]:
+          - link "MDN on Mastodon" [ref=e459] [cursor=pointer]:
+            - /url: https://mastodon.social/@mdn
+        - listitem [ref=e460]:
+          - link "MDN blog RSS feed" [ref=e461] [cursor=pointer]:
+            - /url: /en-US/blog/rss.xml
+      - generic [ref=e462]:
+        - term [ref=e463]: MDN
+        - definition [ref=e464]:
+          - list [ref=e465]:
+            - listitem [ref=e466]:
+              - link "About" [ref=e467] [cursor=pointer]:
+                - /url: /en-US/about
+            - listitem [ref=e468]:
+              - link "Blog" [ref=e469] [cursor=pointer]:
+                - /url: /en-US/blog/
+            - listitem [ref=e470]:
+              - link "Mozilla careers (external)" [ref=e471] [cursor=pointer]:
+                - /url: https://www.mozilla.org/en-US/careers/listings/
+            - listitem [ref=e472]:
+              - link "Advertise with us" [ref=e473] [cursor=pointer]:
+                - /url: /en-US/advertising
+            - listitem [ref=e474]:
+              - link "MDN Plus" [ref=e475] [cursor=pointer]:
+                - /url: /en-US/plus
+            - listitem [ref=e476]:
+              - link "Product help (external)" [ref=e477] [cursor=pointer]:
+                - /url: https://support.mozilla.org/products/mdn-plus
+      - generic [ref=e478]:
+        - term [ref=e479]: Contribute
+        - definition [ref=e480]:
+          - list [ref=e481]:
+            - listitem [ref=e482]:
+              - link "MDN Community" [ref=e483] [cursor=pointer]:
+                - /url: /en-US/community
+            - listitem [ref=e484]:
+              - link "Community resources" [ref=e485] [cursor=pointer]:
+                - /url: /en-US/docs/MDN/Community
+            - listitem [ref=e486]:
+              - link "Writing guidelines" [ref=e487] [cursor=pointer]:
+                - /url: /en-US/docs/MDN/Writing_guidelines
+            - listitem [ref=e488]:
+              - link "MDN Discord (external)" [ref=e489] [cursor=pointer]:
+                - /url: /discord
+            - listitem [ref=e490]:
+              - link "MDN on GitHub (external)" [ref=e491] [cursor=pointer]:
+                - /url: https://github.com/mdn
+      - generic [ref=e492]:
+        - term [ref=e493]: Developers
+        - definition [ref=e494]:
+          - list [ref=e495]:
+            - listitem [ref=e496]:
+              - link "Web technologies" [ref=e497] [cursor=pointer]:
+                - /url: /en-US/docs/Web
+            - listitem [ref=e498]:
+              - link "Learn web development" [ref=e499] [cursor=pointer]:
+                - /url: /en-US/docs/Learn_web_development
+            - listitem [ref=e500]:
+              - link "Guides" [ref=e501] [cursor=pointer]:
+                - /url: /en-US/docs/MDN/Guides
+            - listitem [ref=e502]:
+              - link "Tutorials" [ref=e503] [cursor=pointer]:
+                - /url: /en-US/docs/MDN/Tutorials
+            - listitem [ref=e504]:
+              - link "Glossary" [ref=e505] [cursor=pointer]:
+                - /url: /en-US/docs/Glossary
+            - listitem [ref=e506]:
+              - link "Hacks blog (external)" [ref=e507] [cursor=pointer]:
+                - /url: https://hacks.mozilla.org/
+    - generic [ref=e508]:
+      - link "Mozilla logo" [ref=e509] [cursor=pointer]:
+        - /url: https://www.mozilla.org/
+        - img "Mozilla" [ref=e510]
+      - list [ref=e512]:
+        - listitem [ref=e513]:
+          - link "Website Privacy Notice (external)" [ref=e514] [cursor=pointer]:
+            - /url: https://www.mozilla.org/privacy/websites/
+        - listitem [ref=e515]:
+          - link "Telemetry Settings (external)" [ref=e516] [cursor=pointer]:
+            - /url: https://www.mozilla.org/en-US/privacy/websites/data-preferences/
+        - listitem [ref=e517]:
+          - link "Legal (external)" [ref=e518] [cursor=pointer]:
+            - /url: https://www.mozilla.org/about/legal/terms/mozilla
+        - listitem [ref=e519]:
+          - link "Community Participation Guidelines (external)" [ref=e520] [cursor=pointer]:
+            - /url: https://www.mozilla.org/about/governance/policies/participation/
+      - paragraph [ref=e521]:
+        - text: Visit
+        - link "Mozilla Corporation’s" [ref=e522] [cursor=pointer]:
+          - /url: https://www.mozilla.org/
+        - text: not-for-profit parent, the
+        - link "Mozilla Foundation" [ref=e523] [cursor=pointer]:
+          - /url: https://foundation.mozilla.org/
+        - text: .
+        - text: Portions of this content are ©1998–2026 by individual mozilla.org contributors. Content available under
+        - link "a Creative Commons license" [ref=e524] [cursor=pointer]:
+          - /url: /docs/MDN/Writing_guidelines/Attrib_copyright_license
+        - text: .
+```

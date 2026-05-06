@@ -5,7 +5,7 @@ describe("privacy shield — smoke", () => {
   it("loads and compiles the ruleset", () => {
     const rs = loadRuleset();
     expect(rs.rules.length).toBeGreaterThan(20);
-    expect(rs.version).toBe("2.2.0");
+    expect(rs.version).toBe("2.3.0");
   });
 
   it("redacts a plain email", () => {

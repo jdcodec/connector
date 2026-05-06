@@ -6,6 +6,7 @@ import type {
   RedactInput,
   RedactOptions,
   RedactResult,
+  RedactSpan,
   RedactionStats,
 } from "./types.js";
 
@@ -14,6 +15,7 @@ export type {
   RedactInput,
   RedactOptions,
   RedactResult,
+  RedactSpan,
   RedactionStats,
   RedactScope,
 } from "./types.js";
@@ -29,28 +31,37 @@ export function redact(input: RedactInput | string, options: RedactOptions = {})
   try {
     const rs = loadRuleset();
     const aggregateStats: RedactionStats = {};
+    const captureSpans = options.captureSpans === true;
+    const allSpans: RedactSpan[] | undefined = captureSpans ? [] : undefined;
 
     const shouldScanBody = scope === "body" || scope === "both";
     const shouldScanUrl = (scope === "url" || scope === "both") && normalizedInput.url !== undefined;
 
     let snapshotYaml = normalizedInput.snapshotYaml;
     if (shouldScanBody) {
-      const bodyResult = scanString(normalizedInput.snapshotYaml, rs);
+      const bodyResult = scanString(normalizedInput.snapshotYaml, rs, { captureSpans });
       snapshotYaml = bodyResult.redacted;
       mergeStats(aggregateStats, bodyResult.stats);
+      if (allSpans && bodyResult.spans) {
+        for (const s of bodyResult.spans) allSpans.push({ ...s, source: "body" });
+      }
     }
 
     let url: string | undefined = normalizedInput.url;
     if (shouldScanUrl && normalizedInput.url !== undefined) {
-      const urlResult = redactUrl(normalizedInput.url, rs);
+      const urlResult = redactUrl(normalizedInput.url, rs, captureSpans);
       url = urlResult.url;
       mergeStats(aggregateStats, urlResult.stats);
+      if (allSpans && urlResult.spans) {
+        for (const s of urlResult.spans) allSpans.push({ ...s, source: "url" });
+      }
     }
 
     return {
       snapshotYaml,
       ...(url !== undefined ? { url } : {}),
       redactionStats: aggregateStats,
+      ...(allSpans ? { spans: allSpans } : {}),
     };
   } catch (err) {
     return handleEngineFailure(err, normalizedInput);
@@ -60,12 +71,13 @@ export function redact(input: RedactInput | string, options: RedactOptions = {})
 function redactUrl(
   rawUrl: string,
   rs: ReturnType<typeof loadRuleset>,
-): { url: string; stats: RedactionStats } {
+  captureSpans: boolean,
+): { url: string; stats: RedactionStats; spans?: Array<{ ruleName: string; category: string; start: number; end: number; value: string }> } {
   const fragmentIdx = rawUrl.indexOf("#");
   const scannable = fragmentIdx >= 0 ? rawUrl.slice(0, fragmentIdx) : rawUrl;
   const fragment = fragmentIdx >= 0 ? rawUrl.slice(fragmentIdx) : "";
-  const { redacted, stats } = scanString(scannable, rs);
-  return { url: redacted + fragment, stats };
+  const { redacted, stats, spans } = scanString(scannable, rs, { captureSpans });
+  return { url: redacted + fragment, stats, ...(spans ? { spans } : {}) };
 }
 
 function mergeStats(into: RedactionStats, from: RedactionStats): void {
