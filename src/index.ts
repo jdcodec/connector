@@ -10,6 +10,10 @@
  *   - JDC_REGION — Cloudflare DO location hint (wnam|enam|sam|weur|eeur|apac|oc|afr|me).
  *   - JDC_PLAYWRIGHT_CMD / JDC_PLAYWRIGHT_ARGS — override the upstream MCP server command.
  *   - JDC_PRIVACY_FAIL_OPEN=1 — debug-only escape hatch; emits a critical log.
+ *   - JDC_TRACE=1 — debug-only; appends per-match redaction span detail (rule, offsets, raw value)
+ *     to ${JDC_TRACE_DIR}/spans-<sessionId>.jsonl. Default off; raw values are PII by definition,
+ *     so trace files stay local to the developer's machine and must not be committed or shared.
+ *   - JDC_TRACE_DIR — directory for span JSONL files when JDC_TRACE=1 (default: ./traces).
  */
 
 import { loadConfig } from "./config/env.js";
@@ -94,11 +98,19 @@ async function main(): Promise<void> {
     process.exit(3);
   }
 
+  if (config.traceEnabled) {
+    log.warn("trace.enabled", {
+      dir: config.traceDir,
+      hint: "JDC_TRACE=1 — writing raw matched values (PII) to disk. Local-only debug aid; do not commit or share trace files.",
+    });
+  }
+
   const proxy = await startProxy({
     upstream,
     cloud,
     bypass: config.bypass,
     log,
+    ...(config.traceEnabled ? { trace: { dir: config.traceDir } } : {}),
   });
 
   const shutdown = async (signal: string): Promise<void> => {

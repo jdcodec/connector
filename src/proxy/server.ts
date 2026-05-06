@@ -9,7 +9,7 @@ import type { CloudClient } from "../cloud/client.js";
 import { SessionState } from "../session/state.js";
 import type { UpstreamSession } from "./upstream.js";
 import { handleSnapshot } from "./snapshot.js";
-import type { Logger } from "./snapshot.js";
+import type { Logger, TraceConfig } from "./snapshot.js";
 
 /**
  * Context handed to every interceptor. Mirrors the slice of `ProxyDeps` that
@@ -22,6 +22,7 @@ export interface InterceptDeps {
   session: SessionState;
   bypass: boolean;
   log: Logger;
+  trace?: TraceConfig;
 }
 
 /** Result shape mirrors the MCP SDK `CallToolResult`. */
@@ -64,6 +65,7 @@ async function browserSnapshotInterceptor(
       session: deps.session,
       bypass: deps.bypass,
       log: deps.log,
+      ...(deps.trace ? { trace: deps.trace } : {}),
     });
     return { content: [{ type: "text", text: handled.text }] };
   } catch (err) {
@@ -126,6 +128,8 @@ export interface ProxyDeps {
   cloud: CloudClient | null;
   bypass: boolean;
   log: Logger;
+  /** When set, snapshot interceptor writes per-match span JSONL. JDC_TRACE=1 only. */
+  trace?: TraceConfig;
   // Optional transport injection for tests; production path uses stdio.
   transport?: Transport;
   /**
@@ -208,6 +212,7 @@ export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
         session,
         bypass,
         log,
+        ...(deps.trace ? { trace: deps.trace } : {}),
       });
       // The MCP SDK's `setRequestHandler` return type unions a task-shape
       // variant onto the basic `CallToolResult`. Our `ToolInterceptResult`
