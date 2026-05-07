@@ -113,8 +113,22 @@ async function main(): Promise<void> {
     ...(config.traceEnabled ? { trace: { dir: config.traceDir } } : {}),
   });
 
+  // SHUTDOWN_HARD_TIMEOUT_MS bounds the connector's exit. The SDK's
+  // StdioClientTransport.close() already cascades stdin-end → SIGTERM → SIGKILL
+  // with 2s gates, totalling ~4s worst-case. The hard timeout here is a backstop
+  // so a hung child can never pin the connector indefinitely; orphaning the
+  // grandchildren is preferable to a stuck parent that blocks the next session.
+  const SHUTDOWN_HARD_TIMEOUT_MS = 6000;
+  let shuttingDown = false;
   const shutdown = async (signal: string): Promise<void> => {
+    if (shuttingDown) return;
+    shuttingDown = true;
     log.info("shutdown", { signal });
+    const hardExit = setTimeout(() => {
+      log.error("shutdown.timeout", { signal, timeout_ms: SHUTDOWN_HARD_TIMEOUT_MS });
+      process.exit(1);
+    }, SHUTDOWN_HARD_TIMEOUT_MS);
+    hardExit.unref();
     try {
       await proxy.close();
     } catch {
@@ -125,10 +139,12 @@ async function main(): Promise<void> {
     } catch {
       // best-effort
     }
+    clearTimeout(hardExit);
     process.exit(0);
   };
   process.on("SIGINT", () => { void shutdown("SIGINT"); });
   process.on("SIGTERM", () => { void shutdown("SIGTERM"); });
+  process.on("SIGHUP", () => { void shutdown("SIGHUP"); });
 }
 
 main().catch((err) => {

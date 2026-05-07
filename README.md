@@ -71,7 +71,7 @@ The `jdck_` prefix is the public part of your key (safe in logs and dashboards).
 
 Any MCP-capable client that spawns a stdio command can use the connector — the swap is one line in your client config:
 
-- **From** `command: "npx", args: ["@playwright/mcp", "--no-sandbox"]`
+- **From** `command: "npx", args: ["@playwright/mcp", "--no-sandbox", "--isolated"]`
 - **To**   `command: "jdcodec"` (no extra args needed; pass through any Playwright MCP args you were using)
 
 The connector spawns Playwright MCP itself as a subprocess and proxies everything. Your agent sees the same tools it always did (`browser_snapshot`, `browser_click`, etc.) with no behaviour changes beyond smaller snapshots.
@@ -183,7 +183,7 @@ Retention window is 90 days by default (configurable per-key). Email `hello@jdco
 | `JDC_CLOUD_URL` | no | `https://api.jdcodec.com` | Override endpoint. |
 | `JDC_REGION` | no | — | Cloudflare region hint for session pinning. |
 | `JDC_PLAYWRIGHT_CMD` | no | `npx` | Command to spawn the upstream MCP server. |
-| `JDC_PLAYWRIGHT_ARGS` | no | `@playwright/mcp --no-sandbox` | Arguments for the above. |
+| `JDC_PLAYWRIGHT_ARGS` | no | `@playwright/mcp --no-sandbox --isolated` | Arguments for the above. `--isolated` gives each session a throwaway browser profile so multiple agent clients (VS Code + Cursor + Claude Code) don't fight over a shared `SingletonLock`. |
 | `JDC_TRACE` | no | `0` | `1` writes snapshot traces to `JDC_TRACE_DIR` for debugging. |
 | `JDC_TRACE_DIR` | no | `traces/` | Where traces land. |
 | `JDC_PRIVACY_FAIL_OPEN` | no | `0` | Debug-only escape hatch for shield errors (see above). |
@@ -196,7 +196,7 @@ Retention window is 90 days by default (configurable per-key). Email `hello@jdco
 
 **"config.missing_api_key" at startup** → Set `JDC_API_KEY` or create `~/.jdcodec/config.json`. Or run with `JDC_BYPASS=1` if you just want the privacy shield locally.
 
-**"upstream.start_failed"** → The connector couldn't spawn Playwright MCP. Check that `npx @playwright/mcp --no-sandbox` works standalone; most issues are first-run Playwright browser downloads.
+**"upstream.start_failed"** → The connector couldn't spawn Playwright MCP. Check that `npx @playwright/mcp --no-sandbox --isolated` works standalone; most issues are first-run Playwright browser downloads.
 
 **Agent hangs for a long time on the first request** → Expected on a cold session. The cloud service warms in a couple of seconds; subsequent snapshots in the same session are sub-second. If it persists past ~10s per snapshot, check network connectivity to `api.jdcodec.com`.
 

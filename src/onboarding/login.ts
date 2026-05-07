@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 import { CONSENT_TEXT, defaultDisplay, DisplayIO, palette, printLogo } from "./display.js";
 import { stableMachineId } from "./machine-id.js";
 
@@ -129,10 +131,15 @@ export async function runLogin(deps: LoginDeps = {}): Promise<number> {
 }
 
 function defaultSessionId(): string {
+  // CSPRNG, not Math.random — the sid is the only secret tying the local
+  // poll to the account row that completes browser-side authentication.
+  // A predictable sid lets a co-resident process race the legitimate poll
+  // and exfiltrate the user's email + waitlist position.
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const bytes = randomBytes(SESSION_ID_LEN);
   let out = "";
   for (let i = 0; i < SESSION_ID_LEN; i++) {
-    out += alphabet[Math.floor(Math.random() * alphabet.length)];
+    out += alphabet[bytes[i] % alphabet.length];
   }
   return out;
 }
