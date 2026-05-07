@@ -276,3 +276,122 @@ describe("CloudClient — body shape", () => {
     });
   });
 });
+
+describe("CloudClient — postTelemetry", () => {
+  it("posts to /v1/telemetry with required headers and the body verbatim", async () => {
+    const { fetchImpl, calls } = mockFetch(
+      async () => new Response(null, { status: 204 }),
+    );
+    const client = new CloudClient({
+      baseUrl: "https://api.example.test",
+      apiKey: "jdck_id.secret",
+      fetchImpl,
+      generateRequestId: () => "telemetry-uuid",
+      sleep: async () => {},
+    });
+
+    const result = await client.postTelemetry({
+      session_id: "9c1b2f6e-0b8e-4a77-9cfd-3e3f7b5e8d21",
+      step: 3,
+      client_round_trip_ms: 47.3,
+      redaction_ms: 0.4,
+      cloud_ms: 34.8,
+      upstream_ms: 12.1,
+      connector_version: "jdcodec@0.5.7",
+    });
+
+    expect(result.httpStatus).toBe(204);
+    expect(result.requestId).toBe("telemetry-uuid");
+
+    expect(calls).toHaveLength(1);
+    const req = calls[0];
+    expect(req.url).toBe("https://api.example.test/v1/telemetry");
+    expect(req.method).toBe("POST");
+    expect(req.headers.get("authorization")).toBe("Bearer jdck_id.secret");
+    expect(req.headers.get("x-jdc-api-version")).toBe("1");
+    expect(req.headers.get("x-request-id")).toBe("telemetry-uuid");
+    expect(req.headers.get("content-type")).toBe("application/json");
+
+    const body = JSON.parse(await req.text());
+    expect(body).toEqual({
+      session_id: "9c1b2f6e-0b8e-4a77-9cfd-3e3f7b5e8d21",
+      step: 3,
+      client_round_trip_ms: 47.3,
+      redaction_ms: 0.4,
+      cloud_ms: 34.8,
+      upstream_ms: 12.1,
+      connector_version: "jdcodec@0.5.7",
+    });
+  });
+
+  it("does NOT retry on 5xx (single-shot — telemetry is fire-and-forget)", async () => {
+    let call = 0;
+    const { fetchImpl, calls } = mockFetch(async () => {
+      call++;
+      return new Response(
+        JSON.stringify({ error: { code: "server_error", message: "boom" } }),
+        { status: 500, headers: { "content-type": "application/json" } },
+      );
+    });
+    const client = new CloudClient({
+      apiKey: "jdck_id.secret",
+      fetchImpl,
+      sleep: async () => {},
+    });
+
+    await expect(
+      client.postTelemetry({
+        session_id: "9c1b2f6e-0b8e-4a77-9cfd-3e3f7b5e8d21",
+        step: 0,
+      }),
+    ).rejects.toBeInstanceOf(CloudRequestError);
+
+    expect(calls).toHaveLength(1); // single shot
+    expect(call).toBe(1);
+  });
+
+  it("surfaces network errors as CloudNetworkError", async () => {
+    const fetchImpl: typeof fetch = async () => {
+      throw new Error("network down");
+    };
+    const client = new CloudClient({
+      apiKey: "jdck_id.secret",
+      fetchImpl,
+      sleep: async () => {},
+    });
+    await expect(
+      client.postTelemetry({
+        session_id: "9c1b2f6e-0b8e-4a77-9cfd-3e3f7b5e8d21",
+        step: 0,
+      }),
+    ).rejects.toBeInstanceOf(CloudNetworkError);
+  });
+
+  it("maps 400 telemetry_value_invalid to a CloudRequestError carrying the code", async () => {
+    const { fetchImpl } = mockFetch(
+      async () =>
+        new Response(
+          JSON.stringify({
+            error: { code: "telemetry_value_invalid", message: "negative" },
+          }),
+          { status: 400, headers: { "content-type": "application/json" } },
+        ),
+    );
+    const client = new CloudClient({
+      apiKey: "jdck_id.secret",
+      fetchImpl,
+      sleep: async () => {},
+    });
+    await expect(
+      client.postTelemetry({
+        session_id: "9c1b2f6e-0b8e-4a77-9cfd-3e3f7b5e8d21",
+        step: 0,
+        cloud_ms: -1,
+      }),
+    ).rejects.toMatchObject({
+      name: "CloudRequestError",
+      status: 400,
+      code: "telemetry_value_invalid",
+    });
+  });
+});

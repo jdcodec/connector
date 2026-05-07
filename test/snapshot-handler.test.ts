@@ -230,3 +230,84 @@ describe("handleSnapshot — no YAML block", () => {
     expect(result.text).toBe("Error: page closed");
   });
 });
+
+describe("handleSnapshot — telemetry draft", () => {
+  it("populates telemetry draft with session_id, step, redaction_ms, cloud_ms on compressed outcome", async () => {
+    const cloud = stubCloud(
+      async () =>
+        new Response(
+          JSON.stringify({
+            frame_type: "I",
+            compressed_output: "X",
+            compression_stats: { input_chars: 1, output_chars: 1, codec_ms: 1 },
+          }),
+          { status: 200 },
+        ),
+    );
+    const session = new SessionState();
+    const sessionPeek = session.peek();
+
+    const result = await handleSnapshot(RESPONSE, {
+      cloud,
+      session,
+      bypass: false,
+    });
+
+    expect(result.outcome).toBe("compressed");
+    expect(result.telemetry).toBeDefined();
+    const t = result.telemetry!;
+    expect(t.session_id).toBe(sessionPeek.sessionId);
+    expect(t.step).toBe(0);
+    expect(typeof t.redaction_ms).toBe("number");
+    expect(t.redaction_ms).toBeGreaterThanOrEqual(0);
+    expect(typeof t.cloud_ms).toBe("number");
+    expect(t.cloud_ms).toBeGreaterThanOrEqual(0);
+  });
+
+  it("populates telemetry draft on pass_through outcome", async () => {
+    const cloud = stubCloud(
+      async () =>
+        new Response(
+          JSON.stringify({
+            frame_type: "pass-through",
+            compression_stats: { input_chars: 1, output_chars: 1, codec_ms: 0 },
+          }),
+          { status: 200 },
+        ),
+    );
+    const result = await handleSnapshot(RESPONSE, {
+      cloud,
+      session: new SessionState(),
+      bypass: false,
+    });
+    expect(result.outcome).toBe("pass_through");
+    expect(result.telemetry).toBeDefined();
+  });
+
+  it("does NOT populate telemetry on bypass outcome (no cloud round-trip)", async () => {
+    const result = await handleSnapshot(RESPONSE, {
+      cloud: null,
+      session: new SessionState(),
+      bypass: true,
+    });
+    expect(result.outcome).toBe("bypass");
+    expect(result.telemetry).toBeUndefined();
+  });
+
+  it("does NOT populate telemetry on cloud_unreachable outcome", async () => {
+    const cloud = stubCloud(
+      async () =>
+        new Response(
+          JSON.stringify({ error: { code: "server_error", message: "boom" } }),
+          { status: 500, headers: { "content-type": "application/json" } },
+        ),
+    );
+    const result = await handleSnapshot(RESPONSE, {
+      cloud,
+      session: new SessionState(),
+      bypass: false,
+    });
+    expect(result.outcome).toBe("cloud_unreachable");
+    expect(result.telemetry).toBeUndefined();
+  });
+});

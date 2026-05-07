@@ -329,3 +329,186 @@ describe("tool-interceptor registry", () => {
     }
   });
 });
+
+describe("tool-interceptor — telemetry POST after successful snapshot", () => {
+  it("fires postTelemetry exactly once with the four measured fields", async () => {
+    const upstream = makeFakeUpstream();
+    const { log, events } = makeLog();
+    const [serverTransport, clientTransport] =
+      InMemoryTransport.createLinkedPair();
+
+    // Custom interceptor that returns a telemetry draft (mimicking what
+    // the real browser_snapshot interceptor does after a successful
+    // cloud round-trip). Bypasses needing a real CloudClient mock for
+    // the snapshot path while still exercising the proxy's telemetry
+    // dispatch logic.
+    const draft = {
+      session_id: "9c1b2f6e-0b8e-4a77-9cfd-3e3f7b5e8d21",
+      step: 0,
+      redaction_ms: 0.5,
+      cloud_ms: 12.3,
+    };
+    const fakeAdapter: ToolInterceptor = async () => ({
+      content: [{ type: "text" as const, text: "ok" }],
+      telemetry: draft,
+    });
+
+    const telemetryPosts: Array<Record<string, unknown>> = [];
+    const cloud = {
+      postTelemetry: async (body: Record<string, unknown>) => {
+        telemetryPosts.push(body);
+        return { requestId: "rid", httpStatus: 204 };
+      },
+    } as unknown as import("../src/cloud/client.js").CloudClient;
+
+    const handle = await startProxy({
+      upstream,
+      cloud,
+      bypass: false,
+      log,
+      transport: serverTransport,
+      interceptors: new Map([["fake_adapter_tool", fakeAdapter]]),
+    });
+
+    const client = new Client(
+      { name: "telemetry-test", version: "0.0.0" },
+      { capabilities: {} },
+    );
+    await client.connect(clientTransport);
+
+    try {
+      const result = await client.callTool({
+        name: "fake_adapter_tool",
+        arguments: {},
+      });
+
+      // The MCP SDK return surface must NOT include the telemetry field.
+      expect(result).not.toHaveProperty("telemetry");
+
+      // Allow the fire-and-forget telemetry POST to flush.
+      await new Promise((r) => setTimeout(r, 10));
+
+      expect(telemetryPosts).toHaveLength(1);
+      const posted = telemetryPosts[0];
+      expect(posted.session_id).toBe(draft.session_id);
+      expect(posted.step).toBe(draft.step);
+      expect(posted.redaction_ms).toBe(draft.redaction_ms);
+      expect(posted.cloud_ms).toBe(draft.cloud_ms);
+      expect(typeof posted.upstream_ms).toBe("number");
+      expect(posted.upstream_ms).toBeGreaterThanOrEqual(0);
+      expect(typeof posted.client_round_trip_ms).toBe("number");
+      expect(posted.client_round_trip_ms).toBeGreaterThanOrEqual(
+        posted.upstream_ms as number,
+      );
+      expect(posted.connector_version).toMatch(/^jdcodec@/);
+    } finally {
+      await client.close();
+      await handle.close();
+      void events;
+    }
+  });
+
+  it("does NOT fire telemetry when the interceptor returns no telemetry draft (bypass / unreachable)", async () => {
+    const upstream = makeFakeUpstream();
+    const { log } = makeLog();
+    const [serverTransport, clientTransport] =
+      InMemoryTransport.createLinkedPair();
+
+    const fakeAdapter: ToolInterceptor = async () => ({
+      content: [{ type: "text" as const, text: "ok" }],
+      // no telemetry field
+    });
+
+    const telemetryPosts: unknown[] = [];
+    const cloud = {
+      postTelemetry: async () => {
+        telemetryPosts.push(true);
+        return { requestId: "rid", httpStatus: 204 };
+      },
+    } as unknown as import("../src/cloud/client.js").CloudClient;
+
+    const handle = await startProxy({
+      upstream,
+      cloud,
+      bypass: false,
+      log,
+      transport: serverTransport,
+      interceptors: new Map([["fake_adapter_tool", fakeAdapter]]),
+    });
+
+    const client = new Client(
+      { name: "telemetry-skip-test", version: "0.0.0" },
+      { capabilities: {} },
+    );
+    await client.connect(clientTransport);
+
+    try {
+      await client.callTool({
+        name: "fake_adapter_tool",
+        arguments: {},
+      });
+      await new Promise((r) => setTimeout(r, 10));
+      expect(telemetryPosts).toHaveLength(0);
+    } finally {
+      await client.close();
+      await handle.close();
+    }
+  });
+
+  it("a postTelemetry rejection is logged but does not surface to the agent", async () => {
+    const upstream = makeFakeUpstream();
+    const { log, events } = makeLog();
+    const [serverTransport, clientTransport] =
+      InMemoryTransport.createLinkedPair();
+
+    const fakeAdapter: ToolInterceptor = async () => ({
+      content: [{ type: "text" as const, text: "ok" }],
+      telemetry: {
+        session_id: "9c1b2f6e-0b8e-4a77-9cfd-3e3f7b5e8d21",
+        step: 0,
+        redaction_ms: 0,
+        cloud_ms: 0,
+      },
+    });
+
+    const cloud = {
+      postTelemetry: async () => {
+        throw new Error("simulated network blip");
+      },
+    } as unknown as import("../src/cloud/client.js").CloudClient;
+
+    const handle = await startProxy({
+      upstream,
+      cloud,
+      bypass: false,
+      log,
+      transport: serverTransport,
+      interceptors: new Map([["fake_adapter_tool", fakeAdapter]]),
+    });
+
+    const client = new Client(
+      { name: "telemetry-fail-test", version: "0.0.0" },
+      { capabilities: {} },
+    );
+    await client.connect(clientTransport);
+
+    try {
+      const result = await client.callTool({
+        name: "fake_adapter_tool",
+        arguments: {},
+      });
+      const content = (result.content as Array<{ text: string }>)[0];
+      expect(content.text).toBe("ok"); // call succeeded from the agent's POV
+      await new Promise((r) => setTimeout(r, 10));
+
+      const failedLog = events.find(
+        (e) => e.event === "telemetry.post_failed",
+      );
+      expect(failedLog).toBeDefined();
+      expect(failedLog!.level).toBe("warn");
+    } finally {
+      await client.close();
+      await handle.close();
+    }
+  });
+});
