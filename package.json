@@ -1,6 +1,6 @@
 {
   "name": "jdcodec",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "JD Codec — local MCP proxy that compresses browser-agent snapshots ~80%+ via a cloud codec, with on-device PII redaction. The privacy-first connector for Playwright MCP and any MCP-capable agent.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

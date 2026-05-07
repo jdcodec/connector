@@ -24,10 +24,22 @@ export class UpstreamSession {
   private tools: UpstreamTool[] = [];
 
   async start(opts: UpstreamOptions): Promise<UpstreamTool[]> {
+    // Passthrough the parent process env to the upstream subprocess.
+    // MCP SDK's StdioClientTransport defaults to a short allowlist
+    // (PATH, HOME, USER, LOGNAME, SHELL, TERM, TMPDIR + Windows vars)
+    // when env is undefined — strips proxy vars (HTTP_PROXY, NO_PROXY),
+    // custom CAs (NODE_EXTRA_CA_CERTS), locale (LANG, LC_*, TZ), DISPLAY,
+    // and any operator-set tooling env. Sensible default for arms-length
+    // MCP servers; wrong default for an upstream we spawn under the same
+    // operator trust as ourselves.
+    const inheritedEnv: Record<string, string> = {};
+    for (const [k, v] of Object.entries(process.env)) {
+      if (typeof v === "string") inheritedEnv[k] = v;
+    }
     this.transport = new StdioClientTransport({
       command: opts.command,
       args: opts.args,
-      env: opts.env,
+      env: { ...inheritedEnv, ...(opts.env ?? {}) },
     });
     this.client = new Client(
       { name: "jdcodec-connector", version: "0.1.0" },
