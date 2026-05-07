@@ -37,4 +37,23 @@ export type CloudErrorCode =
   | "payload_too_large"
   | "rate_limited"
   | "server_error"
-  | "codec_overloaded";
+  | "codec_overloaded"
+  | "telemetry_value_invalid"
+  | "telemetry_session_unknown"
+  | "telemetry_too_late";
+
+/**
+ * Body of POST /v1/telemetry. All timing fields optional — connector sends
+ * what it measured, omits what it didn't. Three components are designed to
+ * be additive: client_round_trip_ms ≈ redaction_ms + cloud_ms + upstream_ms;
+ * residual surfaces in queries as a data-quality signal (untracked overhead).
+ */
+export interface TelemetryRequest {
+  session_id: string;
+  step: number;
+  client_round_trip_ms?: number;
+  redaction_ms?: number;
+  cloud_ms?: number;
+  upstream_ms?: number;
+  connector_version?: string;
+}

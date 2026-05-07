@@ -34,6 +34,24 @@ const noopLogger: Logger = {
   error: () => {},
 };
 
+/**
+ * Connector-measured timings for a single snapshot. Populated only on
+ * outcomes where a cloud round-trip succeeded (`compressed`, `pass_through`)
+ * — these are the rows that have a corresponding `usage_events` entry on
+ * the server side, so a telemetry POST has a join target. Bypass / no-yaml
+ * / cloud-unreachable / privacy-fail-closed paths skip telemetry entirely.
+ *
+ * `client_round_trip_ms` and `upstream_ms` are added by the caller (the
+ * proxy server's CallTool handler) since the snapshot handler doesn't see
+ * either boundary; this draft only carries the two it can measure itself.
+ */
+export interface SnapshotTelemetryDraft {
+  session_id: string;
+  step: number;
+  redaction_ms: number;
+  cloud_ms: number;
+}
+
 export interface HandleSnapshotResult {
   text: string;
   outcome:
@@ -44,6 +62,21 @@ export interface HandleSnapshotResult {
     | "cloud_unreachable"
     | "privacy_fail_closed";
   stats?: Record<string, unknown>;
+  telemetry?: SnapshotTelemetryDraft;
+}
+
+/**
+ * High-resolution monotonic clock helpers. `process.hrtime.bigint()` returns
+ * nanoseconds with no Spectre coarsening on Node (the customer's local
+ * process isn't a multi-tenant sandbox — that's the whole point of measuring
+ * here rather than on Workers, which has a 1ms platform floor).
+ */
+function nsNow(): bigint {
+  return process.hrtime.bigint();
+}
+
+function msSince(start: bigint): number {
+  return Number(nsNow() - start) / 1e6;
 }
 
 /**
@@ -76,8 +109,11 @@ export async function handleSnapshot(
   let redactedFull: string;
   let redactionStats: Record<string, number>;
   let redactSpans: RedactSpan[] | undefined;
+  const tRedact = nsNow();
+  let redactionMs = 0;
   try {
     const result = redact(mcpResponseText, trace ? { captureSpans: true } : {});
+    redactionMs = msSince(tRedact);
     redactedFull = result.snapshotYaml;
     redactionStats = result.redactionStats;
     redactSpans = result.spans;
@@ -119,6 +155,8 @@ export async function handleSnapshot(
   // Cloud POST.
   const snapshot = session.consume();
   let postResult;
+  const tCloud = nsNow();
+  let cloudMs = 0;
   try {
     postResult = await cloud.postSnapshot({
       session_id: snapshot.sessionId,
@@ -129,9 +167,17 @@ export async function handleSnapshot(
       client_redacted: true,
       redaction_stats: redactionStats,
     });
+    cloudMs = msSince(tCloud);
   } catch (err) {
     return degradedPath(err, redactedText, redactedYaml, redactionStats, session, log);
   }
+
+  const telemetryDraft: SnapshotTelemetryDraft = {
+    session_id: snapshot.sessionId,
+    step: snapshot.step,
+    redaction_ms: redactionMs,
+    cloud_ms: cloudMs,
+  };
 
   const { response, elapsedMs, requestId } = postResult;
 
@@ -144,7 +190,12 @@ export async function handleSnapshot(
       redaction_stats: redactionStats,
     });
     // Pass-through: server returns flag-only; connector reuses the already-redacted snapshot.
-    return { text: redactedText, outcome: "pass_through", stats: { request_id: requestId } };
+    return {
+      text: redactedText,
+      outcome: "pass_through",
+      stats: { request_id: requestId },
+      telemetry: telemetryDraft,
+    };
   }
 
   const compressed = response.compressed_output ?? "";
@@ -162,6 +213,7 @@ export async function handleSnapshot(
     text: joinSnapshotYaml(split, compressed),
     outcome: "compressed",
     stats: { frame_type: response.frame_type, request_id: requestId },
+    telemetry: telemetryDraft,
   };
 }
 

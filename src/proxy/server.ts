@@ -7,9 +7,10 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import type { CloudClient } from "../cloud/client.js";
 import { SessionState } from "../session/state.js";
+import { VERSION } from "../onboarding/version.js";
 import type { UpstreamSession } from "./upstream.js";
 import { handleSnapshot } from "./snapshot.js";
-import type { Logger, TraceConfig } from "./snapshot.js";
+import type { Logger, SnapshotTelemetryDraft, TraceConfig } from "./snapshot.js";
 
 /**
  * Context handed to every interceptor. Mirrors the slice of `ProxyDeps` that
@@ -25,10 +26,22 @@ export interface InterceptDeps {
   trace?: TraceConfig;
 }
 
-/** Result shape mirrors the MCP SDK `CallToolResult`. */
+/** Result shape mirrors the MCP SDK `CallToolResult`, plus an optional
+ * telemetry draft the request handler uses to fire a /v1/telemetry POST
+ * after the call returns. The telemetry field is stripped from the
+ * surface the MCP SDK sees. */
 export interface ToolInterceptResult {
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
+  telemetry?: SnapshotTelemetryDraft;
+}
+
+function nsNow(): bigint {
+  return process.hrtime.bigint();
+}
+
+function msSince(start: bigint): number {
+  return Number(nsNow() - start) / 1e6;
 }
 
 /**
@@ -67,7 +80,10 @@ async function browserSnapshotInterceptor(
       log: deps.log,
       ...(deps.trace ? { trace: deps.trace } : {}),
     });
-    return { content: [{ type: "text", text: handled.text }] };
+    return {
+      content: [{ type: "text", text: handled.text }],
+      ...(handled.telemetry ? { telemetry: handled.telemetry } : {}),
+    };
   } catch (err) {
     deps.log.error("snapshot.unexpected_error", {
       message: (err as Error)?.message ?? "unknown",
@@ -205,7 +221,13 @@ export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
     }
 
     if (interceptor) {
+      // Customer-experienced wall-clock for this tool call. Timed at the
+      // outermost boundary the connector controls; covers the upstream
+      // call + Privacy Shield + cloud round-trip + any framework cost.
+      const tRoundTrip = nsNow();
+      const tUpstream = nsNow();
       const upstreamResult = await upstream.callTool(name, args);
+      const upstreamMs = msSince(tUpstream);
       const intercepted = await interceptor(args, upstreamResult, {
         upstream,
         cloud,
@@ -214,13 +236,41 @@ export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
         log,
         ...(deps.trace ? { trace: deps.trace } : {}),
       });
-      // The MCP SDK's `setRequestHandler` return type unions a task-shape
-      // variant onto the basic `CallToolResult`. Our `ToolInterceptResult`
-      // is the basic shape (no task field); structurally compatible with
-      // the basic variant at runtime, but TS narrows through the union
-      // and complains. Cast through unknown so the interceptor contract
-      // stays clean while satisfying the SDK's signature.
-      return intercepted as unknown as { content: Array<{ type: "text"; text: string }>; isError?: boolean };
+      // Fire-and-forget telemetry POST. Only present on outcomes where
+      // the cloud round-trip succeeded — bypass/no-yaml/cloud-unreachable
+      // skip telemetry since there's no usage_events row to join against.
+      // Failures are logged and never surfaced to the agent (telemetry is
+      // observability-only, never billable, never load-bearing).
+      if (intercepted.telemetry && cloud) {
+        const draft = intercepted.telemetry;
+        const clientRoundTripMs = msSince(tRoundTrip);
+        cloud
+          .postTelemetry({
+            session_id: draft.session_id,
+            step: draft.step,
+            client_round_trip_ms: clientRoundTripMs,
+            redaction_ms: draft.redaction_ms,
+            cloud_ms: draft.cloud_ms,
+            upstream_ms: upstreamMs,
+            connector_version: `jdcodec@${VERSION}`,
+          })
+          .catch((err: unknown) => {
+            log.warn("telemetry.post_failed", {
+              session_id: draft.session_id,
+              step: draft.step,
+              cause: (err as Error)?.message ?? "unknown",
+            });
+          });
+      }
+      // Strip the telemetry field before returning to the SDK — it isn't
+      // part of the MCP CallToolResult contract. The MCP SDK's
+      // `setRequestHandler` return type also unions a task-shape variant
+      // onto the basic `CallToolResult`; cast through unknown so the
+      // interceptor contract stays clean while satisfying the SDK's
+      // signature.
+      const { telemetry: _telemetry, ...rest } = intercepted;
+      void _telemetry;
+      return rest as unknown as { content: Array<{ type: "text"; text: string }>; isError?: boolean };
     }
 
     const result = await upstream.callTool(name, args);

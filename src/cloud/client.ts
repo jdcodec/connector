@@ -4,11 +4,14 @@ import type {
   CloudErrorCode,
   SnapshotRequest,
   SnapshotResponse,
+  TelemetryRequest,
 } from "./types.js";
 
 export const DEFAULT_CLOUD_URL = "https://api.jdcodec.com";
 export const SNAPSHOT_PATH = "/v1/snapshot";
+export const TELEMETRY_PATH = "/v1/telemetry";
 export const DEFAULT_TIMEOUT_MS = 15_000;
+export const DEFAULT_TELEMETRY_TIMEOUT_MS = 5_000;
 export const DEFAULT_RETRIES = 1;
 
 const API_VERSION = "1";
@@ -79,6 +82,68 @@ export class CloudClient {
       }
     }
     throw lastErr instanceof Error ? lastErr : new CloudNetworkError("unknown error", lastErr);
+  }
+
+  /**
+   * POST /v1/telemetry. Single-shot — telemetry is fire-and-forget at the
+   * caller; we do not retry inside the client. The server uses
+   * INSERT ON CONFLICT DO NOTHING semantics so a caller that wraps this in
+   * its own retry stays idempotent on (session_id, step). Throws on
+   * network or non-2xx response so callers can log; a caller that truly
+   * wants fire-and-forget catches the error and moves on.
+   *
+   * Returns the echoed X-Request-Id and HTTP status — useful for logs.
+   * Body parsing is best-effort: a 204 response has no body, and any
+   * 4xx/5xx error body is returned via the error.
+   */
+  async postTelemetry(
+    body: TelemetryRequest,
+  ): Promise<{ requestId: string; httpStatus: number }> {
+    const requestId = this.generateRequestId();
+    const url = `${this.baseUrl}${TELEMETRY_PATH}`;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-JDC-API-Version": API_VERSION,
+      "X-Request-Id": requestId,
+      Authorization: `Bearer ${this.apiKey}`,
+    };
+
+    const controller = new AbortController();
+    const timeoutHandle = setTimeout(
+      () => controller.abort(),
+      DEFAULT_TELEMETRY_TIMEOUT_MS,
+    );
+
+    let res: Response;
+    try {
+      res = await this.fetchImpl(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } catch (err) {
+      clearTimeout(timeoutHandle);
+      throw new CloudNetworkError(
+        (err as Error)?.name === "AbortError" ? "request timeout" : "network error",
+        err,
+      );
+    }
+    clearTimeout(timeoutHandle);
+
+    const echoedRequestId = res.headers.get("x-request-id") ?? requestId;
+
+    if (!res.ok) {
+      let parsed: unknown;
+      try {
+        parsed = await res.json();
+      } catch {
+        parsed = undefined;
+      }
+      throw cloudErrorFromBody(res.status, parsed, echoedRequestId);
+    }
+
+    return { requestId: echoedRequestId, httpStatus: res.status };
   }
 
   private async postOnce(body: SnapshotRequest): Promise<CloudPostResult> {
