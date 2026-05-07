@@ -23,6 +23,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
+import { assertSafeCloudUrl } from "../config/env.js";
 import { defaultDisplay, DisplayIO, DOCS_URL, palette } from "./display.js";
 import { VERSION } from "./version.js";
 
@@ -383,6 +384,18 @@ export async function probeCloudAuth(input: CloudProbeInput): Promise<CheckResul
       status: "fail",
       detail: "skipped — no API key resolved",
       docsLink: DOCS.apiKeys,
+    };
+  }
+  // Defence in depth — refuse to send the bearer over a non-https URL.
+  try {
+    assertSafeCloudUrl(cloudUrl);
+  } catch (err) {
+    return {
+      name: "Cloud auth",
+      status: "fail",
+      detail: (err as Error).message,
+      hint: "Set JDC_CLOUD_URL to https://api.jdcodec.com or unset it to use the default.",
+      docsLink: DOCS.errors,
     };
   }
   const url = `${cloudUrl.replace(/\/+$/, "")}/v1/snapshot`;

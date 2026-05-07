@@ -1,3 +1,4 @@
+import { assertSafeCloudUrl } from "../config/env.js";
 import { CloudNetworkError, CloudRequestError } from "./errors.js";
 import type {
   CloudErrorCode,
@@ -48,6 +49,10 @@ export class CloudClient {
 
   constructor(opts: CloudClientOptions) {
     this.baseUrl = (opts.baseUrl ?? DEFAULT_CLOUD_URL).replace(/\/+$/, "");
+    // Defence in depth — never send the bearer to a non-https URL.
+    // loadConfig() already validates the env var, but a direct constructor
+    // call (tests, future call sites) bypasses that gate.
+    assertSafeCloudUrl(this.baseUrl);
     this.apiKey = opts.apiKey;
     this.timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.retries = opts.retries ?? DEFAULT_RETRIES;

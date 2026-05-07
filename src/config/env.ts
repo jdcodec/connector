@@ -23,8 +23,28 @@ export interface ConfigSource {
 
 const DEFAULT_CLOUD_URL = "https://api.jdcodec.com";
 const DEFAULT_PLAYWRIGHT_CMD = "npx";
-const DEFAULT_PLAYWRIGHT_ARGS = ["@playwright/mcp", "--no-sandbox"];
+const DEFAULT_PLAYWRIGHT_ARGS = ["@playwright/mcp", "--no-sandbox", "--isolated"];
 const DEFAULT_TRACE_DIR = "traces";
+
+/**
+ * Verify a cloud URL is safe to send the bearer token to. Production must be
+ * https; local-dev allows plain http on loopback only. Anything else (a typo,
+ * a copy-paste from a debug session, a hostile env-file injection) would
+ * leak the API key in cleartext.
+ */
+export function assertSafeCloudUrl(url: string): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error(`JDC_CLOUD_URL is not a valid URL: ${url}`);
+  }
+  if (parsed.protocol === "https:") return;
+  if (parsed.protocol === "http:" && (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")) return;
+  throw new Error(
+    `JDC_CLOUD_URL must use https:// (loopback http://localhost is allowed for local dev). Got: ${url}`,
+  );
+}
 
 export function loadConfig(source: ConfigSource = {}): ConnectorConfig {
   const env = source.env ?? process.env;
@@ -33,6 +53,7 @@ export function loadConfig(source: ConfigSource = {}): ConnectorConfig {
 
   const apiKey = resolveApiKey(env, configPath, readFile);
   const cloudUrl = (env.JDC_CLOUD_URL ?? DEFAULT_CLOUD_URL).replace(/\/+$/, "");
+  assertSafeCloudUrl(cloudUrl);
   const bypass = isTruthy(env.JDC_BYPASS);
   const region = env.JDC_REGION && env.JDC_REGION.trim() !== "" ? env.JDC_REGION : undefined;
   const playwrightCmd = env.JDC_PLAYWRIGHT_CMD ?? DEFAULT_PLAYWRIGHT_CMD;
