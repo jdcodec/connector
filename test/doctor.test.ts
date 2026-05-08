@@ -482,6 +482,77 @@ describe("probeMultipleBinaries", () => {
     expect(r.status).toBe("ok");
     expect(r.detail).toContain("/a/jdcodec");
   });
+
+  it("ok when only the npx ephemeral cache path is visible (running inside npx)", () => {
+    // pip-installed entrypoint delegates to `npx jdcodec`; inside the npx
+    // subshell `which -a jdcodec` resolves only to the cache binary because
+    // npx prepends its bin dir to PATH for the subprocess.
+    const r = probeMultipleBinaries([
+      "/Users/x/.npm/_npx/f450e587791f9810/node_modules/.bin/jdcodec",
+    ]);
+    expect(r.status).toBe("ok");
+    expect(r.detail).toMatch(/npx delegation chain/);
+  });
+
+  it("ok when pip-installed entrypoint + npx cache are both visible (delegation chain)", () => {
+    // The documented `pip install jdcodec` → `jdcodec doctor` happy path:
+    // the pip-installed bin started the chain, npx prepended its cache bin
+    // for the subshell. Both are part of the same logical install — no shadow.
+    const r = probeMultipleBinaries([
+      "/Users/x/.npm/_npx/f450e587791f9810/node_modules/.bin/jdcodec",
+      "/Users/x/.local/bin/jdcodec",
+    ]);
+    expect(r.status).toBe("ok");
+    expect(r.detail).toContain("/Users/x/.local/bin/jdcodec");
+    expect(r.detail).toMatch(/npx delegation chain in use/);
+  });
+
+  it("ok when global npm install + npx cache are both visible (npx satisfied via global)", () => {
+    // `npm install -g jdcodec` then `npx jdcodec` — npx finds the global
+    // install and may or may not stage a separate cache copy depending on
+    // version. Single persistent install, no shadow.
+    const r = probeMultipleBinaries([
+      "/Users/x/.npm/_npx/abcdef/node_modules/.bin/jdcodec",
+      "/Users/x/.npm-global/bin/jdcodec",
+    ]);
+    expect(r.status).toBe("ok");
+    expect(r.detail).toContain("/Users/x/.npm-global/bin/jdcodec");
+  });
+
+  it("warn with pip-vs-global-npm hint when both persistent paths are present", () => {
+    const r = probeMultipleBinaries([
+      "/Users/x/.local/bin/jdcodec",
+      "/Users/x/.npm-global/bin/jdcodec",
+      "/Users/x/.npm/_npx/abcdef/node_modules/.bin/jdcodec",
+    ]);
+    expect(r.status).toBe("warn");
+    expect(r.detail).toMatch(/2 binaries/);
+    // npx cache filtered out of the hint payload
+    expect(r.hint).not.toMatch(/_npx/);
+    expect(r.hint).toContain("/Users/x/.local/bin/jdcodec");
+    expect(r.hint).toContain("/Users/x/.npm-global/bin/jdcodec");
+    expect(r.hint).toMatch(/npm uninstall -g jdcodec/);
+  });
+
+  it("warn with global-npm-only hint when no pip install is involved", () => {
+    const r = probeMultipleBinaries([
+      "/usr/local/bin/jdcodec",
+      "/Users/x/.npm-global/bin/jdcodec",
+    ]);
+    expect(r.status).toBe("warn");
+    expect(r.hint).toMatch(/global npm install/);
+    expect(r.hint).toMatch(/npm uninstall -g jdcodec/);
+  });
+
+  it("warn with generic hint when neither path is recognisably global-npm or pip", () => {
+    const r = probeMultipleBinaries([
+      "/opt/custom1/bin/jdcodec",
+      "/opt/custom2/bin/jdcodec",
+    ]);
+    expect(r.status).toBe("warn");
+    expect(r.hint).toMatch(/different package managers/);
+    expect(r.hint).not.toMatch(/npm uninstall -g/);
+  });
 });
 
 // ---------------------------------------------------------------------

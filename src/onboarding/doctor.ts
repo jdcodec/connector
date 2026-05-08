@@ -528,17 +528,34 @@ export function probeNpmGlobalPath(pathEnv: string): CheckResult {
 
 /**
  * Detects the failure mode where multiple `jdcodec` binaries shadow
- * each other on PATH (e.g. a pip-installed wrapper at
+ * each other on PATH (e.g. a pip-installed entrypoint at
  * `~/.local/bin/jdcodec` AND a leftover `npm install -g jdcodec`
  * at `~/.npm-global/bin/jdcodec`). The first match wins, but the
  * second can still be reached by other tools (notably `npx`) — which
  * is exactly how a stale global install can keep serving an old
  * version even when the user thinks they've upgraded.
  *
- * Warns on multi-match. PATH-deduped — if the user's PATH lists the
- * same directory twice (common shell-rc footgun) the same path
- * appearing twice is collapsed to one.
+ * Ephemeral npx cache paths (`.../_npx/<hash>/...`) are excluded from
+ * the shadow count: they only exist for the duration of an `npx jdcodec`
+ * invocation, and the documented `pip install jdcodec` → `jdcodec doctor`
+ * onboarding flow runs inside one (the pip-installed entrypoint
+ * delegates via `npx jdcodec`). Counting the npx cache as a shadow
+ * produced a false-positive warning on the documented happy path.
+ *
+ * Warns on multi-match across persistent paths. PATH-deduped — if the
+ * user's PATH lists the same directory twice (common shell-rc footgun)
+ * the same path appearing twice is collapsed to one.
  */
+const NPX_EPHEMERAL_PATH_REGEX = /\/_npx\/[^/]+\//;
+
+function isPipInstall(p: string): boolean {
+  return /\/\.local\/bin\/jdcodec$/.test(p) || /\/pipx\//.test(p);
+}
+
+function isGlobalNpmInstall(p: string): boolean {
+  return /\/\.npm-global\/|\/npm\/bin\/|\/lib\/node_modules\//.test(p);
+}
+
 export function probeMultipleBinaries(paths: string[]): CheckResult {
   const unique = Array.from(new Set(paths.map((p) => p.trim()).filter(Boolean)));
   if (unique.length === 0) {
@@ -549,23 +566,48 @@ export function probeMultipleBinaries(paths: string[]): CheckResult {
       hint: "If you ran this via `jdcodec doctor`, this probe is internally inconsistent — please report it.",
     };
   }
-  if (unique.length === 1) {
+  const persistent = unique.filter((p) => !NPX_EPHEMERAL_PATH_REGEX.test(p));
+  if (persistent.length <= 1) {
+    let detail: string;
+    if (persistent.length === 0) {
+      detail = "single install via npx delegation chain";
+    } else if (unique.length > persistent.length) {
+      detail = `single persistent binary at ${persistent[0]} (npx delegation chain in use)`;
+    } else {
+      detail = `single binary at ${persistent[0]}`;
+    }
     return {
       name: "jdcodec on PATH",
       status: "ok",
-      detail: `single binary at ${unique[0]}`,
+      detail,
     };
   }
-  const list = unique.map((p) => `  ${p}`).join("\n");
+  const list = persistent.map((p) => `  ${p}`).join("\n");
+  const hasPip = persistent.some(isPipInstall);
+  const hasGlobalNpm = persistent.some(isGlobalNpmInstall);
+  let hint: string;
+  if (hasPip && hasGlobalNpm) {
+    hint =
+      `Multiple jdcodec binaries are visible on PATH. The first match wins:\n${list}\n` +
+      `Pick one canonical install path. The most common cause is a leftover ` +
+      `\`npm install -g jdcodec\` from before you switched to pip. Remove ` +
+      `the stale one with \`npm uninstall -g jdcodec\`.`;
+  } else if (hasGlobalNpm) {
+    hint =
+      `Multiple jdcodec binaries are visible on PATH. The first match wins:\n${list}\n` +
+      `One of these is a global npm install. If you didn't intend to install ` +
+      `jdcodec globally, remove it with \`npm uninstall -g jdcodec\`.`;
+  } else {
+    hint =
+      `Multiple jdcodec binaries are visible on PATH. The first match wins:\n${list}\n` +
+      `Two installs from different package managers are shadowing each other. ` +
+      `Pick one canonical install path and remove the other.`;
+  }
   return {
     name: "jdcodec on PATH",
     status: "warn",
-    detail: `${unique.length} binaries shadow each other`,
-    hint:
-      `Multiple jdcodec binaries are visible on PATH. The first match wins:\n${list}\n` +
-      `Pick one canonical install path. The most common cause is a leftover ` +
-      `\`npm install -g jdcodec\` from before you switched to a managed installer ` +
-      `(e.g. pipx). Remove the stale one with \`npm uninstall -g jdcodec\` if applicable.`,
+    detail: `${persistent.length} binaries shadow each other`,
+    hint,
     docsLink: DOCS.setup,
   };
 }
