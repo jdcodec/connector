@@ -1,4 +1,5 @@
 import { assertSafeCloudUrl } from "../config/env.js";
+import { VERSION } from "../onboarding/version.js";
 import { CloudNetworkError, CloudRequestError } from "./errors.js";
 import type {
   CloudErrorCode,
@@ -104,6 +105,7 @@ export class CloudClient {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       "X-JDC-API-Version": API_VERSION,
+      "X-JDC-Connector-Version": VERSION,
       "X-Request-Id": requestId,
       Authorization: `Bearer ${this.apiKey}`,
     };
@@ -152,6 +154,7 @@ export class CloudClient {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       "X-JDC-API-Version": API_VERSION,
+      "X-JDC-Connector-Version": VERSION,
       "X-Request-Id": requestId,
       Authorization: `Bearer ${this.apiKey}`,
     };

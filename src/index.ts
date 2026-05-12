@@ -29,6 +29,7 @@ import {
 import { makeStderrLogger } from "./proxy/log.js";
 import { startProxy } from "./proxy/server.js";
 import { UpstreamSession } from "./proxy/upstream.js";
+import { checkForUpdate, formatVerdict } from "./onboarding/update-check.js";
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -104,6 +105,21 @@ async function main(): Promise<void> {
       hint: "JDC_TRACE=1 — writing raw matched values (PII) to disk. Local-only debug aid; do not commit or share trace files.",
     });
   }
+
+  // Fire-and-forget npm-registry update check. Never blocks startup;
+  // cached for 24h. A surfaced "outdated" verdict is a stderr warn line
+  // so MCP-hosted agents see it but stdio (JSON-RPC) stays clean.
+  void checkForUpdate()
+    .then((verdict) => {
+      if (verdict.state === "outdated") {
+        log.warn("connector.update_available", {
+          current: verdict.current,
+          latest: verdict.latest,
+          hint: formatVerdict(verdict),
+        });
+      }
+    })
+    .catch(() => undefined);
 
   const proxy = await startProxy({
     upstream,

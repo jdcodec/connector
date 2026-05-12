@@ -26,6 +26,7 @@ import { join } from "node:path";
 import { assertSafeCloudUrl } from "../config/env.js";
 import { defaultDisplay, DisplayIO, DOCS_URL, palette } from "./display.js";
 import { VERSION } from "./version.js";
+import { checkForUpdate, type UpdateVerdict } from "./update-check.js";
 
 const MIN_NODE_MAJOR = 22;
 const PLAYWRIGHT_PROBE_TIMEOUT_MS = 10_000;
@@ -191,6 +192,44 @@ export function probeConnectorVersion(): CheckResult {
     status: "ok",
     detail: `jdcodec ${VERSION}`,
   };
+}
+
+// ---------------------------------------------------------------------
+// Probe 11 — newer connector version available (advisory; never fails)
+// ---------------------------------------------------------------------
+
+/**
+ * Surfaces an advisory warning when the npm registry advertises a newer
+ * `jdcodec` than this build. Never returns `fail` — being out of date
+ * is not broken. Test hook lets the suite inject a verdict directly.
+ */
+export async function probeUpdateAvailable(
+  verdictOverride?: UpdateVerdict,
+): Promise<CheckResult> {
+  const verdict = verdictOverride ?? (await checkForUpdate());
+  switch (verdict.state) {
+    case "outdated":
+      return {
+        name: "Latest release",
+        status: "warn",
+        detail: `newer version available: ${verdict.current} → ${verdict.latest}`,
+        hint: "Upgrade with: npm install -g jdcodec@latest",
+        docsLink: DOCS.setup,
+      };
+    case "current":
+      return {
+        name: "Latest release",
+        status: "ok",
+        detail: `on latest (${verdict.current})`,
+      };
+    case "unknown":
+      return {
+        name: "Latest release",
+        status: "warn",
+        detail: `update check skipped: ${verdict.reason}`,
+        hint: "This is informational only — the connector still works.",
+      };
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -899,6 +938,10 @@ export async function runDoctor(opts: DoctorIO = {}): Promise<number> {
   const r10 = await probeGlobalNpmConflict(which("npm"), spawnAsync, VERSION);
   renderCheck(r10, display);
   results.push(r10);
+
+  const r11 = await probeUpdateAvailable();
+  renderCheck(r11, display);
+  results.push(r11);
 
   display.print("");
   const exitCode = summariseExitCode(results);
