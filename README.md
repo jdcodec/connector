@@ -118,6 +118,33 @@ Runs the connector with the cloud disabled. Your agent still receives PII-redact
 
 The `{{REDACTED_…}}` tokens will appear in the snapshots your agent sees. That's expected — the shield runs whether or not the cloud is called.
 
+### `JDC_LLM_PROVIDER` — accurate savings numbers (optional, recommended)
+
+```bash
+export JDC_LLM_PROVIDER=anthropic          # one of: anthropic, openai, gemini
+export JDC_LLM_MODEL=claude-sonnet-4-6     # optional, refines tokenizer for newer model families
+```
+
+**Why set this:** JDC compresses your snapshots, which shrinks the LLM bill you pay your provider. The size of that saving depends on which tokenizer your provider uses to count tokens — Anthropic, OpenAI, and Google each tokenize the same text differently, by up to ~22% on snapshot-style content. Telling JDC which provider you use lets it count tokens with the same tokenizer your provider does, so the saving numbers JDC reports back to you (in `jdcodec savings` and your usage reports) match what's actually showing up on your provider invoice. Without this, JDC quotes savings using an approximate tokenizer and labels the report as approximate so you know the difference.
+
+**What JDC does with the value:** picks the right tokenizer for counting your tokens. That's all. It's not forwarded to your LLM provider, it doesn't change what's stored about your snapshots, and it isn't used to route your model calls — JDC never sees your LLM API key by design. The value travels with each snapshot request, the codec stores it on the session, and consults it when totalling tokens for your reports.
+
+Two practical notes:
+
+- **Aggregator routing**: if you call Claude through AWS Bedrock or Vertex, set `anthropic` (not `bedrock`/`vertex`) — the aggregator routes the request, but the underlying model still tokenizes. Same for Azure OpenAI → `openai`. The tokenizer family follows the model, not the transport.
+- **First snapshot wins per session**: JDC binds your provider on the first snapshot of a session and ignores changes after that. Set it once and forget; rotating mid-task does nothing until the next session.
+
+If `JDC_LLM_PROVIDER` is set to anything other than `anthropic`/`openai`/`gemini`, the connector logs a `config.agent_llm_invalid` warning at startup and falls back to the approximate tokenizer (so a typo doesn't silently leave you with wrong-looking numbers).
+
+Alternative to env: add `agent_llm` to `~/.jdcodec/config.json`:
+
+```json
+{ "api_key": "jdck_yourid.yoursecret",
+  "agent_llm": { "provider": "anthropic", "model": "claude-sonnet-4-6" } }
+```
+
+`JDC_LLM_PROVIDER` env wins over the file when both are present.
+
 ### `JDC_REGION` — pin to a region (optional)
 
 Set to the closest Cloudflare region for lower latency on long-running sessions:
@@ -182,6 +209,8 @@ Retention window is 90 days by default (configurable per-key). Email `hello@jdco
 | `JDC_BYPASS` | no | `0` | `1` skips the cloud entirely; shield still runs. |
 | `JDC_CLOUD_URL` | no | `https://api.jdcodec.com` | Override endpoint. |
 | `JDC_REGION` | no | — | Cloudflare region hint for session pinning. |
+| `JDC_LLM_PROVIDER` | no (recommended) | — | Your LLM provider (`anthropic`/`openai`/`gemini`). Lets JDC quote savings using the same tokenizer your provider bills you with, so the numbers match your invoice. Unset = approximate savings, clearly labelled. |
+| `JDC_LLM_MODEL` | no | — | Optional model identifier (e.g. `claude-sonnet-4-6`, `gpt-4o`). Refines the tokenizer choice on providers with multiple model generations. Ignored unless `JDC_LLM_PROVIDER` is also set. |
 | `JDC_PLAYWRIGHT_CMD` | no | `npx` | Command to spawn the upstream MCP server. |
 | `JDC_PLAYWRIGHT_ARGS` | no | `@playwright/mcp --no-sandbox --isolated` | Arguments for the above. `--isolated` gives each session a throwaway browser profile so multiple agent clients (VS Code + Cursor + Claude Code) don't fight over a shared `SingletonLock`. |
 | `JDC_TRACE` | no | `0` | `1` writes snapshot traces to `JDC_TRACE_DIR` for debugging. |

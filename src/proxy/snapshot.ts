@@ -5,6 +5,7 @@ import { redact, JdcPrivacyEngineError } from "../privacy/index.js";
 import type { RedactSpan } from "../privacy/index.js";
 import { CloudClient } from "../cloud/client.js";
 import { CloudNetworkError, CloudRequestError } from "../cloud/errors.js";
+import type { AgentLlm } from "../cloud/types.js";
 import { SessionState } from "../session/state.js";
 import { extractUrlFromResponse, joinSnapshotYaml, splitSnapshotYaml } from "./parse.js";
 
@@ -20,6 +21,14 @@ export interface HandleSnapshotDeps {
   log?: Logger;
   /** When set, redact in span-capture mode and append spans to JSONL. Off by default. */
   trace?: TraceConfig;
+  /**
+   * Optional agent-LLM metadata. When set, sent on every cloud POST so
+   * the service-side tokenizer picks the customer's provider; when
+   * absent, the service falls back to an approximate tokenizer. The
+   * cloud only acts on the first snapshot of a session — sending it
+   * every request is intentional and stateless on the connector side.
+   */
+  agentLlm?: AgentLlm;
 }
 
 export interface Logger {
@@ -98,7 +107,7 @@ export async function handleSnapshot(
   mcpResponseText: string,
   deps: HandleSnapshotDeps,
 ): Promise<HandleSnapshotResult> {
-  const { cloud, session, bypass, trace } = deps;
+  const { cloud, session, bypass, trace, agentLlm } = deps;
   const log = deps.log ?? noopLogger;
 
   // Privacy Shield — mandatory on every path, including bypass + degraded.
@@ -166,6 +175,7 @@ export async function handleSnapshot(
       snapshot_yaml: redactedYaml,
       client_redacted: true,
       redaction_stats: redactionStats,
+      ...(agentLlm !== undefined ? { agent_llm: agentLlm } : {}),
     });
     cloudMs = msSince(tCloud);
   } catch (err) {

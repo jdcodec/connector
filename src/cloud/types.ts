@@ -2,6 +2,36 @@ import type { RedactionStats } from "../privacy/types.js";
 
 export type FrameType = "I" | "P" | "P-nochange" | "pass-through";
 
+/**
+ * The downstream LLM provider the customer's agent is calling. Used by
+ * the cloud service to pick the correct tokenizer family for token-aware
+ * usage accounting. Three values today (anthropic / openai / gemini);
+ * customers on aggregators (Bedrock, Vertex, OpenRouter, Azure, Together,
+ * Fireworks) set this to the *underlying model's* tokenizer family —
+ * the aggregator does not tokenize, the model does. Claude on Bedrock or
+ * Vertex → `"anthropic"`; OpenAI on Azure → `"openai"`; etc.
+ */
+export type LlmProvider = "anthropic" | "openai" | "gemini";
+
+/**
+ * Customer's agent-LLM metadata, sent on every `/v1/snapshot` request.
+ * The cloud service stores it on the session on the first snapshot and
+ * ignores subsequent values (first-wins) — so the connector can send it
+ * every request without tracking per-session state. When omitted, the
+ * cloud falls back to an approximate tokenizer and the resulting usage
+ * rows carry that fact explicitly.
+ */
+export interface AgentLlm {
+  provider: LlmProvider;
+  /**
+   * Optional model identifier, e.g. `"claude-sonnet-4-6"`, `"gpt-4o"`,
+   * `"gemini-2.5-pro"`. Refines tokenizer-version selection when the
+   * provider supports multiple tokenizers (e.g. some model generations
+   * tokenize the same text differently from earlier generations).
+   */
+  model?: string;
+}
+
 export interface SnapshotRequest {
   session_id: string;
   task_id: string;
@@ -10,6 +40,12 @@ export interface SnapshotRequest {
   snapshot_yaml: string;
   client_redacted: true;
   redaction_stats: RedactionStats;
+  /**
+   * Optional — the cloud service only acts on it on the first snapshot
+   * of a session. Source: `JDC_LLM_PROVIDER` env (or `agent_llm` key in
+   * `~/.jdcodec/config.json`).
+   */
+  agent_llm?: AgentLlm;
 }
 
 export interface SnapshotResponse {

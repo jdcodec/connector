@@ -6,6 +6,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import type { CloudClient } from "../cloud/client.js";
+import type { AgentLlm } from "../cloud/types.js";
 import { SessionState } from "../session/state.js";
 import { VERSION } from "../onboarding/version.js";
 import type { UpstreamSession } from "./upstream.js";
@@ -24,6 +25,8 @@ export interface InterceptDeps {
   bypass: boolean;
   log: Logger;
   trace?: TraceConfig;
+  /** Customer's agent-LLM metadata; forwarded to the cloud per snapshot. */
+  agentLlm?: AgentLlm;
 }
 
 /** Result shape mirrors the MCP SDK `CallToolResult`, plus an optional
@@ -79,6 +82,7 @@ async function browserSnapshotInterceptor(
       bypass: deps.bypass,
       log: deps.log,
       ...(deps.trace ? { trace: deps.trace } : {}),
+      ...(deps.agentLlm !== undefined ? { agentLlm: deps.agentLlm } : {}),
     });
     return {
       content: [{ type: "text", text: handled.text }],
@@ -146,6 +150,13 @@ export interface ProxyDeps {
   log: Logger;
   /** When set, snapshot interceptor writes per-match span JSONL. JDC_TRACE=1 only. */
   trace?: TraceConfig;
+  /**
+   * Customer's agent-LLM metadata (provider + optional model). When set,
+   * forwarded with every cloud snapshot POST so the service-side
+   * tokenizer picks the right family; when absent, the service falls
+   * back to an approximate tokenizer.
+   */
+  agentLlm?: AgentLlm;
   // Optional transport injection for tests; production path uses stdio.
   transport?: Transport;
   /**
@@ -235,6 +246,7 @@ export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
         bypass,
         log,
         ...(deps.trace ? { trace: deps.trace } : {}),
+        ...(deps.agentLlm !== undefined ? { agentLlm: deps.agentLlm } : {}),
       });
       // Fire-and-forget telemetry POST. Only present on outcomes where
       // the cloud round-trip succeeded — bypass/no-yaml/cloud-unreachable

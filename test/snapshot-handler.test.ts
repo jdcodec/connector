@@ -107,6 +107,90 @@ describe("handleSnapshot — happy path", () => {
   });
 });
 
+describe("handleSnapshot — agent_llm forwarding", () => {
+  it("omits agent_llm from the cloud body when deps.agentLlm is unset", async () => {
+    let captured: Record<string, unknown> | undefined;
+    const cloud = stubCloud(async (req) => {
+      captured = req as Record<string, unknown>;
+      return new Response(
+        JSON.stringify({
+          frame_type: "I",
+          compressed_output: "OUT",
+          compression_stats: { input_chars: 100, output_chars: 20, codec_ms: 5 },
+        }),
+        { status: 200 },
+      );
+    });
+    await handleSnapshot(RESPONSE, {
+      cloud,
+      session: new SessionState(),
+      bypass: false,
+    });
+    expect(captured).toBeDefined();
+    expect("agent_llm" in (captured as object)).toBe(false);
+  });
+
+  it("forwards provider-only agent_llm in the cloud body", async () => {
+    let captured: Record<string, unknown> | undefined;
+    const cloud = stubCloud(async (req) => {
+      captured = req as Record<string, unknown>;
+      return new Response(
+        JSON.stringify({
+          frame_type: "I",
+          compressed_output: "OUT",
+          compression_stats: { input_chars: 100, output_chars: 20, codec_ms: 5 },
+        }),
+        { status: 200 },
+      );
+    });
+    await handleSnapshot(RESPONSE, {
+      cloud,
+      session: new SessionState(),
+      bypass: false,
+      agentLlm: { provider: "anthropic" },
+    });
+    expect(captured?.agent_llm).toEqual({ provider: "anthropic" });
+  });
+
+  it("forwards provider + model agent_llm in the cloud body", async () => {
+    let captured: Record<string, unknown> | undefined;
+    const cloud = stubCloud(async (req) => {
+      captured = req as Record<string, unknown>;
+      return new Response(
+        JSON.stringify({
+          frame_type: "I",
+          compressed_output: "OUT",
+          compression_stats: { input_chars: 100, output_chars: 20, codec_ms: 5 },
+        }),
+        { status: 200 },
+      );
+    });
+    await handleSnapshot(RESPONSE, {
+      cloud,
+      session: new SessionState(),
+      bypass: false,
+      agentLlm: { provider: "openai", model: "gpt-4o" },
+    });
+    expect(captured?.agent_llm).toEqual({
+      provider: "openai",
+      model: "gpt-4o",
+    });
+  });
+
+  it("agent_llm is not sent on the bypass path (no cloud POST happens)", async () => {
+    const cloud = stubCloud(async () => {
+      throw new Error("should not be called");
+    });
+    const result = await handleSnapshot(RESPONSE, {
+      cloud,
+      session: new SessionState(),
+      bypass: true,
+      agentLlm: { provider: "anthropic" },
+    });
+    expect(result.outcome).toBe("bypass");
+  });
+});
+
 describe("handleSnapshot — bypass + fallback", () => {
   it("bypass=true skips cloud and returns redacted snapshot", async () => {
     const cloud = stubCloud(async () => {
