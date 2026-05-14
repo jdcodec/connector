@@ -1,6 +1,7 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { readFileSync, existsSync } from "node:fs";
+import type { AgentLlm, LlmProvider } from "../cloud/types.js";
 
 export interface ConnectorConfig {
   apiKey: string | null;
@@ -12,6 +13,15 @@ export interface ConnectorConfig {
   traceEnabled: boolean;
   traceDir: string;
   failOpen: boolean;
+  /**
+   * Customer's agent-LLM metadata. Sourced from `JDC_LLM_PROVIDER` (+
+   * optional `JDC_LLM_MODEL`) env vars; falls back to the `agent_llm`
+   * key in `~/.jdcodec/config.json` if env vars are absent. Undefined
+   * when neither is set — the cloud service then falls back to an
+   * approximate tokenizer for usage accounting. Char metrics are
+   * unaffected.
+   */
+  agentLlm: AgentLlm | undefined;
 }
 
 export interface ConfigSource {
@@ -63,6 +73,7 @@ export function loadConfig(source: ConfigSource = {}): ConnectorConfig {
   const traceEnabled = isTruthy(env.JDC_TRACE);
   const traceDir = env.JDC_TRACE_DIR ?? DEFAULT_TRACE_DIR;
   const failOpen = isTruthy(env.JDC_PRIVACY_FAIL_OPEN);
+  const agentLlm = resolveAgentLlm(env, configPath, readFile);
 
   return {
     apiKey,
@@ -74,7 +85,62 @@ export function loadConfig(source: ConfigSource = {}): ConnectorConfig {
     traceEnabled,
     traceDir,
     failOpen,
+    agentLlm,
   };
+}
+
+const VALID_PROVIDERS: ReadonlySet<LlmProvider> = new Set<LlmProvider>([
+  "anthropic",
+  "openai",
+  "gemini",
+]);
+
+/**
+ * Resolve agent-LLM metadata. Same env-first, config-file-fallback
+ * shape as `resolveApiKey`. Malformed entries (unknown provider, wrong
+ * type) downgrade to `undefined` rather than throw — the connector's
+ * snapshot path must keep working even if the customer fat-fingered
+ * the env var.
+ */
+function resolveAgentLlm(
+  env: NodeJS.ProcessEnv,
+  configPath: string,
+  readFile: (path: string) => string | null,
+): AgentLlm | undefined {
+  const envProvider = (env.JDC_LLM_PROVIDER ?? "").trim().toLowerCase();
+  if (envProvider !== "") {
+    if (!VALID_PROVIDERS.has(envProvider as LlmProvider)) {
+      // Unknown provider name — surface visibly via the log on next
+      // snapshot rather than silently dropping. The caller knows to
+      // emit the warn-line; here we treat it as "not configured".
+      return undefined;
+    }
+    const provider = envProvider as LlmProvider;
+    const model = env.JDC_LLM_MODEL?.trim();
+    return model && model.length > 0 ? { provider, model } : { provider };
+  }
+
+  // Env not set — try the config file.
+  const raw = readFile(configPath);
+  if (raw === null) return undefined;
+  let parsed: { agent_llm?: unknown };
+  try {
+    parsed = JSON.parse(raw) as { agent_llm?: unknown };
+  } catch {
+    return undefined;
+  }
+  const fromFile = parsed.agent_llm;
+  if (typeof fromFile !== "object" || fromFile === null || Array.isArray(fromFile)) {
+    return undefined;
+  }
+  const fileObj = fromFile as Record<string, unknown>;
+  const fileProvider = typeof fileObj.provider === "string" ? fileObj.provider.toLowerCase() : "";
+  if (!VALID_PROVIDERS.has(fileProvider as LlmProvider)) return undefined;
+  const out: AgentLlm = { provider: fileProvider as LlmProvider };
+  if (typeof fileObj.model === "string" && fileObj.model.trim().length > 0) {
+    out.model = fileObj.model.trim();
+  }
+  return out;
 }
 
 function resolveApiKey(

@@ -118,6 +118,114 @@ describe("loadConfig", () => {
       }),
     ).toThrow(/not a valid URL/);
   });
+
+  // agent_llm — JDC_LLM_PROVIDER + JDC_LLM_MODEL with config-file fallback.
+  it("agentLlm: undefined when JDC_LLM_PROVIDER is unset", () => {
+    const cfg = loadConfig({ env: makeEnv({}), readFile: () => null });
+    expect(cfg.agentLlm).toBeUndefined();
+  });
+
+  it("agentLlm: parses JDC_LLM_PROVIDER alone (model optional)", () => {
+    const cfg = loadConfig({
+      env: makeEnv({ JDC_LLM_PROVIDER: "anthropic" }),
+      readFile: () => null,
+    });
+    expect(cfg.agentLlm).toEqual({ provider: "anthropic" });
+  });
+
+  it("agentLlm: parses JDC_LLM_PROVIDER + JDC_LLM_MODEL", () => {
+    const cfg = loadConfig({
+      env: makeEnv({
+        JDC_LLM_PROVIDER: "anthropic",
+        JDC_LLM_MODEL: "claude-sonnet-4-6",
+      }),
+      readFile: () => null,
+    });
+    expect(cfg.agentLlm).toEqual({
+      provider: "anthropic",
+      model: "claude-sonnet-4-6",
+    });
+  });
+
+  it("agentLlm: case-insensitive provider; trims model whitespace", () => {
+    const cfg = loadConfig({
+      env: makeEnv({
+        JDC_LLM_PROVIDER: "  Anthropic  ",
+        JDC_LLM_MODEL: "  claude-sonnet-4-6  ",
+      }),
+      readFile: () => null,
+    });
+    expect(cfg.agentLlm).toEqual({
+      provider: "anthropic",
+      model: "claude-sonnet-4-6",
+    });
+  });
+
+  it("agentLlm: undefined when provider is not in the closed enum", () => {
+    const cfg = loadConfig({
+      env: makeEnv({ JDC_LLM_PROVIDER: "mistral" }),
+      readFile: () => null,
+    });
+    expect(cfg.agentLlm).toBeUndefined();
+  });
+
+  it("agentLlm: empty JDC_LLM_MODEL is dropped (provider-only entry stays)", () => {
+    const cfg = loadConfig({
+      env: makeEnv({ JDC_LLM_PROVIDER: "openai", JDC_LLM_MODEL: "" }),
+      readFile: () => null,
+    });
+    expect(cfg.agentLlm).toEqual({ provider: "openai" });
+  });
+
+  it("agentLlm: falls back to ~/.jdcodec/config.json when env is absent", () => {
+    const cfg = loadConfig({
+      env: makeEnv({}),
+      readFile: () =>
+        JSON.stringify({
+          agent_llm: { provider: "gemini", model: "gemini-2.5-pro" },
+        }),
+    });
+    expect(cfg.agentLlm).toEqual({
+      provider: "gemini",
+      model: "gemini-2.5-pro",
+    });
+  });
+
+  it("agentLlm: env wins over config file", () => {
+    const cfg = loadConfig({
+      env: makeEnv({ JDC_LLM_PROVIDER: "anthropic" }),
+      readFile: () =>
+        JSON.stringify({ agent_llm: { provider: "gemini" } }),
+    });
+    expect(cfg.agentLlm).toEqual({ provider: "anthropic" });
+  });
+
+  it("agentLlm: ignores malformed config.json without throwing", () => {
+    const cfg = loadConfig({
+      env: makeEnv({}),
+      readFile: () => "not-json{",
+    });
+    expect(cfg.agentLlm).toBeUndefined();
+  });
+
+  it("agentLlm: ignores config.json entry with invalid provider", () => {
+    const cfg = loadConfig({
+      env: makeEnv({}),
+      readFile: () =>
+        JSON.stringify({ agent_llm: { provider: "mistral" } }),
+    });
+    expect(cfg.agentLlm).toBeUndefined();
+  });
+
+  it("agentLlm: ignores config.json entry with non-string model", () => {
+    const cfg = loadConfig({
+      env: makeEnv({}),
+      readFile: () =>
+        JSON.stringify({ agent_llm: { provider: "openai", model: 42 } }),
+    });
+    // Provider survives; bad model is dropped.
+    expect(cfg.agentLlm).toEqual({ provider: "openai" });
+  });
 });
 
 describe("assertSafeCloudUrl", () => {

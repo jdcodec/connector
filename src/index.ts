@@ -8,6 +8,13 @@
  *   - JDC_BYPASS=1 — skip cloud codec, return the already-redacted snapshot. Privacy Shield remains mandatory.
  *   - JDC_CLOUD_URL — override cloud endpoint (default https://api.jdcodec.com).
  *   - JDC_REGION — Cloudflare DO location hint (wnam|enam|sam|weur|eeur|apac|oc|afr|me).
+ *   - JDC_LLM_PROVIDER — downstream LLM provider the agent calls (`anthropic`|`openai`|`gemini`).
+ *     Optional. When set, the connector forwards it with every snapshot so the cloud's
+ *     tokenizer picks the matching family; when unset, the cloud falls back to an
+ *     approximate tokenizer and the usage row records that fact explicitly.
+ *   - JDC_LLM_MODEL — optional model identifier (e.g. `claude-sonnet-4-6`, `gpt-4o`,
+ *     `gemini-2.5-pro`). Refines tokenizer-version selection when a provider supports
+ *     multiple. Ignored unless `JDC_LLM_PROVIDER` is also set.
  *   - JDC_PLAYWRIGHT_CMD / JDC_PLAYWRIGHT_ARGS — override the upstream MCP server command.
  *   - JDC_PRIVACY_FAIL_OPEN=1 — debug-only escape hatch; emits a critical log.
  *   - JDC_TRACE=1 — debug-only; appends per-match redaction span detail (rule, offsets, raw value)
@@ -106,6 +113,27 @@ async function main(): Promise<void> {
     });
   }
 
+  // Surface the agent-LLM binding once at startup. Three branches:
+  //  - configured: info line confirming the provider (+ model). Helps
+  //    customers verify their env wired up correctly.
+  //  - typo / unrecognised provider: explicit warn so a fat-fingered
+  //    value doesn't silently downgrade to approximate counts.
+  //  - unset: silent. Approximate counts are the documented default.
+  if (config.agentLlm) {
+    log.info("config.agent_llm", {
+      provider: config.agentLlm.provider,
+      ...(config.agentLlm.model ? { model: config.agentLlm.model } : {}),
+    });
+  } else {
+    const raw = process.env.JDC_LLM_PROVIDER?.trim();
+    if (raw && raw.length > 0) {
+      log.warn("config.agent_llm_invalid", {
+        raw,
+        hint: "JDC_LLM_PROVIDER must be one of: anthropic, openai, gemini. Falling back to approximate token accounting.",
+      });
+    }
+  }
+
   // Fire-and-forget npm-registry update check. Never blocks startup;
   // cached for 24h. A surfaced "outdated" verdict is a stderr warn line
   // so MCP-hosted agents see it but stdio (JSON-RPC) stays clean.
@@ -127,6 +155,7 @@ async function main(): Promise<void> {
     bypass: config.bypass,
     log,
     ...(config.traceEnabled ? { trace: { dir: config.traceDir } } : {}),
+    ...(config.agentLlm !== undefined ? { agentLlm: config.agentLlm } : {}),
   });
 
   // SHUTDOWN_HARD_TIMEOUT_MS bounds the connector's exit. The SDK's
