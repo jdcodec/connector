@@ -14,6 +14,28 @@ export interface ConnectorConfig {
   traceDir: string;
   failOpen: boolean;
   /**
+   * Privacy Shield posture. "on" (default) runs the Shield on every snapshot.
+   * "off" only when explicitly disabled; any unset or malformed value resolves
+   * to "on" (fail-safe). Sourced from `JDC_PRIVACY_SHIELD`, then the
+   * `privacy_shield` key in `~/.jdcodec/config.json`. Distinct from `bypass`
+   * (JDC_BYPASS, the codec bypass): turning the Shield off keeps the cloud path
+   * active but sends the snapshot unredacted, and only together with the ack.
+   */
+  privacyShield: "on" | "off";
+  /**
+   * Deliberate acknowledgement that unredacted snapshots are intended. Required
+   * in addition to `privacyShield === "off"` for bypass to engage. Sourced from
+   * `JDC_PRIVACY_SHIELD_BYPASS_ACK` (truthy) or the `privacy_shield_bypass_ack`
+   * key in `~/.jdcodec/config.json`. Default false.
+   */
+  privacyShieldBypassAck: boolean;
+  /**
+   * Derived: redaction is skipped only when the Shield is off AND the ack is
+   * set. Both signals are required, so a single misconfiguration cannot send
+   * raw text.
+   */
+  privacyShieldBypassEngaged: boolean;
+  /**
    * Customer's agent-LLM metadata. Sourced from `JDC_LLM_PROVIDER` (+
    * optional `JDC_LLM_MODEL`) env vars; falls back to the `agent_llm`
    * key in `~/.jdcodec/config.json` if env vars are absent. Undefined
@@ -73,6 +95,9 @@ export function loadConfig(source: ConfigSource = {}): ConnectorConfig {
   const traceEnabled = isTruthy(env.JDC_TRACE);
   const traceDir = env.JDC_TRACE_DIR ?? DEFAULT_TRACE_DIR;
   const failOpen = isTruthy(env.JDC_PRIVACY_FAIL_OPEN);
+  const privacyShield = resolvePrivacyShield(env, configPath, readFile);
+  const privacyShieldBypassAck = resolvePrivacyShieldBypassAck(env, configPath, readFile);
+  const privacyShieldBypassEngaged = privacyShield === "off" && privacyShieldBypassAck;
   const agentLlm = resolveAgentLlm(env, configPath, readFile);
 
   return {
@@ -85,6 +110,9 @@ export function loadConfig(source: ConfigSource = {}): ConnectorConfig {
     traceEnabled,
     traceDir,
     failOpen,
+    privacyShield,
+    privacyShieldBypassAck,
+    privacyShieldBypassEngaged,
     agentLlm,
   };
 }
@@ -141,6 +169,62 @@ function resolveAgentLlm(
     out.model = fileObj.model.trim();
   }
   return out;
+}
+
+/**
+ * Resolve the Privacy Shield posture with a fail-safe bias: only the exact
+ * (case-insensitive) string "off" disables the Shield. Anything else, including
+ * unset or malformed values, keeps it on. `JDC_PRIVACY_SHIELD` is read first;
+ * only when it is unset/blank does the config-file `privacy_shield` key apply.
+ */
+function resolvePrivacyShield(
+  env: NodeJS.ProcessEnv,
+  configPath: string,
+  readFile: (path: string) => string | null,
+): "on" | "off" {
+  const fromEnv = env.JDC_PRIVACY_SHIELD;
+  if (fromEnv !== undefined && fromEnv.trim() !== "") {
+    return fromEnv.trim().toLowerCase() === "off" ? "off" : "on";
+  }
+
+  // Env unset — try the config file.
+  const raw = readFile(configPath);
+  if (raw === null) return "on";
+  try {
+    const parsed = JSON.parse(raw) as { privacy_shield?: unknown };
+    if (
+      typeof parsed.privacy_shield === "string" &&
+      parsed.privacy_shield.trim().toLowerCase() === "off"
+    ) {
+      return "off";
+    }
+  } catch {
+    return "on";
+  }
+  return "on";
+}
+
+/**
+ * Resolve the bypass acknowledgement. `JDC_PRIVACY_SHIELD_BYPASS_ACK` (truthy)
+ * OR the config-file `privacy_shield_bypass_ack === true` enables it; default
+ * false. The acknowledgement on its own never engages bypass — it must be
+ * paired with `privacyShield === "off"`.
+ */
+function resolvePrivacyShieldBypassAck(
+  env: NodeJS.ProcessEnv,
+  configPath: string,
+  readFile: (path: string) => string | null,
+): boolean {
+  if (isTruthy(env.JDC_PRIVACY_SHIELD_BYPASS_ACK)) return true;
+
+  const raw = readFile(configPath);
+  if (raw === null) return false;
+  try {
+    const parsed = JSON.parse(raw) as { privacy_shield_bypass_ack?: unknown };
+    return parsed.privacy_shield_bypass_ack === true;
+  } catch {
+    return false;
+  }
 }
 
 function resolveApiKey(

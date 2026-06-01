@@ -153,6 +153,9 @@ async function main(): Promise<void> {
     upstream,
     cloud,
     bypass: config.bypass,
+    privacyShieldBypass: config.privacyShieldBypassEngaged,
+    privacyShieldBypassIncomplete:
+      config.privacyShield === "off" && !config.privacyShieldBypassAck,
     log,
     ...(config.traceEnabled ? { trace: { dir: config.traceDir } } : {}),
     ...(config.agentLlm !== undefined ? { agentLlm: config.agentLlm } : {}),
