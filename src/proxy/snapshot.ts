@@ -18,6 +18,19 @@ export interface HandleSnapshotDeps {
   cloud: CloudClient | null;
   session: SessionState;
   bypass: boolean;
+  /**
+   * Privacy Shield bypass engaged (off-switch + ack). When true, redaction is
+   * skipped and the raw snapshot + url are sent with `client_redacted: false`
+   * and `privacy_shield_bypass: true`. Distinct from `bypass` (codec bypass);
+   * if both are set the codec bypass short-circuits the POST and this is moot.
+   */
+  privacyShieldBypass?: boolean;
+  /**
+   * Off-switch seen without the ack — a half-configured bypass. The Shield
+   * stays on; the connector warns once per process that the ack is also
+   * required. Mutually exclusive with `privacyShieldBypass`.
+   */
+  privacyShieldBypassIncomplete?: boolean;
   log?: Logger;
   /** When set, redact in span-capture mode and append spans to JSONL. Off by default. */
   trace?: TraceConfig;
@@ -42,6 +55,14 @@ const noopLogger: Logger = {
   warn: () => {},
   error: () => {},
 };
+
+/**
+ * One-time latch for the "off-switch without ack" warning. The Privacy Shield
+ * bypass needs both the off-switch and the ack; seeing the off-switch alone is
+ * a half-configured bypass we warn about once per process, then run the Shield
+ * normally.
+ */
+let privacyBypassIncompleteWarned = false;
 
 /**
  * Connector-measured timings for a single snapshot. Populated only on
@@ -92,7 +113,8 @@ function msSince(start: bigint): number {
  * Hot-path handler for a `browser_snapshot` response from upstream Playwright MCP.
  *
  * 1. Extract the YAML + URL from the MCP text.
- * 2. Run Privacy Shield (mandatory) on snapshot body + url.
+ * 2. Run Privacy Shield on snapshot body + url. Skipped only when the Privacy
+ *    Shield bypass is engaged (off-switch + ack) — distinct from JDC_BYPASS.
  * 3. If JDC_BYPASS or cloud is null: return the redacted snapshot unchanged.
  * 4. Otherwise POST to the cloud codec and splice compressed_output in.
  * 5. On any transient failure (network / 5xx / 429), degrade to the already-redacted
@@ -109,6 +131,18 @@ export async function handleSnapshot(
 ): Promise<HandleSnapshotResult> {
   const { cloud, session, bypass, trace, agentLlm } = deps;
   const log = deps.log ?? noopLogger;
+  const privacyShieldBypass = deps.privacyShieldBypass === true;
+
+  // Off-switch set without the ack: keep the Shield on (the safe default) and
+  // warn once that the ack is also required to engage bypass.
+  if (deps.privacyShieldBypassIncomplete && !privacyBypassIncompleteWarned) {
+    privacyBypassIncompleteWarned = true;
+    log.warn("privacy.bypass.incomplete", {
+      detail:
+        "JDC_PRIVACY_SHIELD=off was set without JDC_PRIVACY_SHIELD_BYPASS_ACK; " +
+        "the Privacy Shield stayed on. Set both to send unredacted snapshots.",
+    });
+  }
 
   // Privacy Shield — mandatory on every path, including bypass + degraded.
   // We redact the ENTIRE MCP response text (not just the YAML block) so PII leaked
@@ -120,21 +154,32 @@ export async function handleSnapshot(
   let redactSpans: RedactSpan[] | undefined;
   const tRedact = nsNow();
   let redactionMs = 0;
-  try {
-    const result = redact(mcpResponseText, trace ? { captureSpans: true } : {});
-    redactionMs = msSince(tRedact);
-    redactedFull = result.snapshotYaml;
-    redactionStats = result.redactionStats;
-    redactSpans = result.spans;
-  } catch (err) {
-    if (err instanceof JdcPrivacyEngineError) {
-      log.error("privacy.engine.block", { code: err.code });
-      return {
-        text: "[JDCodec: snapshot blocked by Privacy Shield. Set JDC_PRIVACY_FAIL_OPEN=1 to debug.]",
-        outcome: "privacy_fail_closed",
-      };
+  if (privacyShieldBypass) {
+    // Privacy Shield bypass engaged: skip redaction entirely and use the raw
+    // response for the YAML split + URL extraction. The cloud POST below carries
+    // client_redacted:false + privacy_shield_bypass:true so the server records
+    // the unredacted send; the raw url is sent as-is (the server minimizes it
+    // for its own persistence). The fail-closed branch does not apply — nothing
+    // is redacted.
+    redactedFull = mcpResponseText;
+    redactionStats = {};
+  } else {
+    try {
+      const result = redact(mcpResponseText, trace ? { captureSpans: true } : {});
+      redactionMs = msSince(tRedact);
+      redactedFull = result.snapshotYaml;
+      redactionStats = result.redactionStats;
+      redactSpans = result.spans;
+    } catch (err) {
+      if (err instanceof JdcPrivacyEngineError) {
+        log.error("privacy.engine.block", { code: err.code });
+        return {
+          text: "[JDCodec: snapshot blocked by Privacy Shield. Set JDC_PRIVACY_FAIL_OPEN=1 to debug.]",
+          outcome: "privacy_fail_closed",
+        };
+      }
+      throw err;
     }
-    throw err;
   }
 
   if (trace && redactSpans && redactSpans.length > 0) {
@@ -163,6 +208,16 @@ export async function handleSnapshot(
 
   // Cloud POST.
   const snapshot = session.consume();
+  if (privacyShieldBypass) {
+    // Audit every unredacted send. Counts and ids only, never snapshot content:
+    // the connector's own logs stay metadata-only even under bypass. The raw
+    // body goes only to the cloud and the agent.
+    log.warn("privacy.bypass.engaged", {
+      session_id: snapshot.sessionId,
+      step: snapshot.step,
+      input_chars: redactedYaml.length,
+    });
+  }
   let postResult;
   const tCloud = nsNow();
   let cloudMs = 0;
@@ -173,8 +228,9 @@ export async function handleSnapshot(
       step: snapshot.step,
       url: redactedUrl,
       snapshot_yaml: redactedYaml,
-      client_redacted: true,
+      client_redacted: !privacyShieldBypass,
       redaction_stats: redactionStats,
+      ...(privacyShieldBypass ? { privacy_shield_bypass: true } : {}),
       ...(agentLlm !== undefined ? { agent_llm: agentLlm } : {}),
     });
     cloudMs = msSince(tCloud);

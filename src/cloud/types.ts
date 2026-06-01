@@ -38,8 +38,18 @@ export interface SnapshotRequest {
   step: number;
   url: string;
   snapshot_yaml: string;
-  client_redacted: true;
+  /**
+   * True when the connector redacted PII before sending. False only on the
+   * deliberate unredacted-send path, which must also set `privacy_shield_bypass`.
+   */
+  client_redacted: boolean;
   redaction_stats: RedactionStats;
+  /**
+   * Set true alongside `client_redacted: false` to opt into an unredacted send.
+   * Optional and additive: omitting it (the default path) is unchanged
+   * behaviour. `redaction_stats` is `{}` when this is true.
+   */
+  privacy_shield_bypass?: boolean;
   /**
    * Optional — the cloud service only acts on it on the first snapshot
    * of a session. Source: `JDC_LLM_PROVIDER` env (or `agent_llm` key in

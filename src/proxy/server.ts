@@ -23,6 +23,10 @@ export interface InterceptDeps {
   cloud: CloudClient | null;
   session: SessionState;
   bypass: boolean;
+  /** Privacy Shield bypass engaged (off-switch + ack); forwarded per snapshot. */
+  privacyShieldBypass?: boolean;
+  /** Off-switch without the ack; surfaces the one-time incomplete warning. */
+  privacyShieldBypassIncomplete?: boolean;
   log: Logger;
   trace?: TraceConfig;
   /** Customer's agent-LLM metadata; forwarded to the cloud per snapshot. */
@@ -80,6 +84,10 @@ async function browserSnapshotInterceptor(
       cloud: deps.cloud,
       session: deps.session,
       bypass: deps.bypass,
+      ...(deps.privacyShieldBypass ? { privacyShieldBypass: true } : {}),
+      ...(deps.privacyShieldBypassIncomplete
+        ? { privacyShieldBypassIncomplete: true }
+        : {}),
       log: deps.log,
       ...(deps.trace ? { trace: deps.trace } : {}),
       ...(deps.agentLlm !== undefined ? { agentLlm: deps.agentLlm } : {}),
@@ -147,6 +155,10 @@ export interface ProxyDeps {
   upstream: UpstreamSession;
   cloud: CloudClient | null;
   bypass: boolean;
+  /** Privacy Shield bypass engaged (off-switch + ack); forwarded per snapshot. */
+  privacyShieldBypass?: boolean;
+  /** Off-switch without the ack; surfaces the one-time incomplete warning. */
+  privacyShieldBypassIncomplete?: boolean;
   log: Logger;
   /** When set, snapshot interceptor writes per-match span JSONL. JDC_TRACE=1 only. */
   trace?: TraceConfig;
@@ -244,6 +256,10 @@ export async function startProxy(deps: ProxyDeps): Promise<ProxyHandle> {
         cloud,
         session,
         bypass,
+        ...(deps.privacyShieldBypass ? { privacyShieldBypass: true } : {}),
+        ...(deps.privacyShieldBypassIncomplete
+          ? { privacyShieldBypassIncomplete: true }
+          : {}),
         log,
         ...(deps.trace ? { trace: deps.trace } : {}),
         ...(deps.agentLlm !== undefined ? { agentLlm: deps.agentLlm } : {}),
